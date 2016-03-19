@@ -1,0 +1,159 @@
+1) Fonctionnement Général de NSGA2
+2) Explication de chaque étape
+
+
+
+**************************************************
+
+
+
+1) Fonctionnement Général de NSGA2
+
+	DEBUT NSGA2
+
+
+		=> Récupération du fichier de paramètres
+
+		=> Initialisation du Problème
+
+		=> Génération d'une première population de taille N
+			=> Génération d'individu GRASP 
+			=> Génération d'individu Random
+			( Selon Paramètres )
+	
+		=> Ranking de la première population
+
+		=> Ecriture des données
+
+
+		DEBUT BOUCLE : Critère d'arrêt = TEMPS, GENERATION, HYPERVOLUME
+
+			DEBUT BOUCLE : Création de N Enfants
+
+				=> Sélection de deux parents
+					=> Sélection random
+					=> Sélection par championnat
+					( Selon Paramètres )
+		
+				=> Création d'un enfants à partir des deux parents
+	
+			FIN BOUCLE
+	
+	
+			=> Ranking de la population de taille 2N
+				=> Ranking des individus
+				=> Suppression des clônes
+				( Selon Paramètres )
+				=> Sauvegarde d'individu avec le Crowding2
+				( Selon Paramètres )
+				=> Augmentation de la taille de la population si besoin, mise à jour de N.
+				( Selon Paramètres )
+				=> Recréation de la population de taille N 
+				( Façon habituelle de NSGA2 )
+		
+			=> Ecriture des données
+			( Selon Paramètres )
+		
+			=> Calcul d'Hypervolume
+			( Selon Paramètres )
+		
+			=> Incrémentation TEMPS, GENERATION.
+		
+		FIN BOUCLE
+	
+	
+		=> Ecriture des données
+		( Selon Paramètres )
+	
+		=> Extraction des individus intéressant de la population
+		
+		=> Ecriture des données
+		
+		=> Création des images
+		( Si n_obj < 3 )
+	
+		=> Evaluation de la qualité de la population obtenue
+	
+	
+	FIN NSGA2
+
+
+
+**************************************************
+
+
+
+2) Explication des choix algorithmiques des étapes les plus complexes :
+
+		* Génération d'individu GRASP
+						
+			Le nombre de direction "n_Delta" du fichier de paramètre correspond au nombre de directions qui seront traité entre chaque paire d'objectif. Ainsi pour deux objectifs, c'est le nombre de direction totale. Cependant pour 3 objectifs ou plus, il faut multiplier ce nombre par le nombre de paire faisable et rajouter une direction centrale. Les objectifs qui ne sont pas dans la paire traité sont tous mis à 0.
+			Pour 1 direction, ce sera une direction centrale prenant 50% de chaque objectif ( Plus une centrale à tous les objectifs si plus de 2 objectifs )
+			Pour 2 directions, ce sera une direction pour chaque objectif ( Plus une centrale à tous les objectifs si plus de 2 objectifs )
+			Pour tout nombre de direction supérieur à 2, l'espace des objectifs sera séparé de façon équitable, par exemple pour 4 direction, une paire d'objectif se vera attribuer les valeurs 0-100 / 33-66 / 66-33 / 100-0 afin de permettre une dispersion équitable des solutions.( Plus une centrale à tous les objectifs si plus de 2 objectifs ) objectifs )
+			La direction centrale à tous les objectifs se calcule en prenant 100/nbrObj ainsi pour 4 objectif, la direction centrale sera 25-25-25-25
+			
+			Le nombre de solution GRASP créée est définie par le paramètre "split". Entre 0 et 1 ( exclu ) cette valeur représente un pourcentage de la population de taille N qui sera divisé entre chaque direction afin de leur donner un nombre égale d'individu. Par exemple, avec 2 objectifs, 5 directions, une population de taille 1000 et un split de 0.5, chaque direction GRASP aura " 1000*0.5/(5*1+0) = 100 " individus. Supérieur ou égale à 1, la valeur représente le nombre de solution créée par direction. La taille de la population résultante peut être supérieur à N, le trie sera fait dans le premier ranking.
+
+
+
+		* Ranking de la population
+		
+			Pour chaque individu, l'on va compter par combien de solution il est dominé et s'il domine une solution, elle sera rajouté dans son set de dominance. Toutes les solutions qui ne sont pas dominées se voient attribuer le rang1. On décrémente ensuite le compteur de chaque solution se trouvant dans les sets de dominances des solutions du rang 1, celles dont le compteur tombe à 0 sont placés dans le rang 2. On recomence ainsi de suite avec le rang 2 jusqu'à définir le rang de toutes les solutions.
+			
+			Une fois que tous les individus ont un rang attribué, si la suppression des clones est activée on vérifie dans chaque rang la présence de clone que l'on élimine.
+			
+			On réinitialise la population à vide.
+			
+			On calcule le crowding2 d'un pourcentage "crowdTotal" du nombre de rang total. On retire les solutions de rang1 de ce set car elles seront nécessairement gardé par la suite. Ne pas les prendre dès le départ et ainsi ne pas calculer leur crowding2 les pénaliseraient dans la suite lors du championnat entre parents. Puis on sauvegarde un pourcentage "crowdSave" de N de solution du set restant d'individu que l'on rajoute à la population à garder.
+			
+			Si le nombre de clone supprimé est supérieur à la taille de la population, on rajoute des individus aléatoires ou mutés ( actuellement que aléatoire mais le changement est simple à faire ).
+	
+			Si le rang1 est plus grand qu'un certain pourcentage "rank1maxsize" de la population, on augmente la taille de la population avec N = N*( 1 + rank1maxsize )
+			
+			On remplie ensuite la population avec le rang1, puis le rang2 etc ( tout en calculant leur crowding1 si le championnat entre parent est activé ) jusqu'à se trouver sur le rang intermédiaire, dont l'on ne peut remplir entièrement NSGA2. On calcule le crowding1 de ce rang, puis l'on trie les individus en fonction de leur ordre d'intérêt. On récupère les plus intéressants jusqu'à ce que la population soit de taille N à nouveau.
+			
+
+
+		* Sélection de deux parents
+		
+			Si le championnat entre parent est activé, on sélectionne aléatoirement deux individus de la population de taille N. Si le nombre de génération est paire ce sera le parent avec le rang le plus élevé qui sera retenu ( si les rangs sont égaux ce sera celui avec la plus grande valeur de crowding1 ). Si le nombre de génération est impaire, ce sera le parent avec le crowding2 le plus grand qui sera retenu. Cela permet d'alterner phase de convergence et de dispersion.
+			
+			
+			
+		* Sélection des enfants ( lié à INDIVIDU et non NSGA2 )
+			
+			Les deux parents vont générer deux enfants, ces deux enfants vont être rendu faisable s'ils ne l'étaient pas. Une fois les deux enfants faisable, on choisira celui qui domine l'autre. Sinon, le choix sera aléatoire.
+
+
+		
+		* Calcul d'Hypervolume
+		
+			A partir d'une stabilisation du rang moyen ( actuellement à partir de 10% du temps ou du nombre de génération total "Time" et "n_Gener" ) l'on va calculer l'hypervolume créé par les solutions de rang 1 et ce tous les "HyperVolCD" génération et puis on va le comparer à l'hypervolume de la génération précédente. Si l'hypervolume n'a pas évolué de plus de "PercentEvolution" pourcent, l'on arrête le processus de génération.
+		
+	
+	
+		* Extraction des individus intéressant de la population
+		
+			L'extraction des individus intéressant de la population finale est un casse-tête que l'on n'a pas encore résolue à ce jour. Afin d'avoir une approximation fonctionnant correctement pour 2 Objectif, on pratique un quadrillage entre deux solutions de rang 1 consécutives. On récupère ensuite dans ce quadrillage les solutions de meilleurs rang et on fait cela selon chaque objectif.
+			
+			
+		
+		* Evaluation de la qualité de la population obtenue
+		
+			Plusieurs mesures d'évalutation de la qualité de la population sont actuellement mis en place. La première consiste à comparer l'hypervolume de notre population à l'hypervolume des solutions exactes si elles sont disponible. La seconde mesures de qualités est un pourcentage de solutions exactes que l'on a trouvé. La troisième est la distance moyenne entre nos solutions de rang 1 et la plus proche solution exacte de chacune d'elle. La dernière est un calcul de la dispersion ( spread ) de la population, plus il est proche de 0 meilleur il est.
+	
+		
+		
+		* Trie d'une population selon objectif / crowding
+		
+			Les tries d'une population d'individu se font actuellement par un algorithme de quicksort qui est au pire en n^2 ( mais généralement n*log(n) ). L'implémentation éventuelle d'un tri par tas pourrait améliorer ce trie.
+			
+
+
+**************************************************
+
+
+
+
+

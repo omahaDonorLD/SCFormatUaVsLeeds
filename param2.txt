@@ -1,0 +1,28 @@
+PROBLEM_CRITERIA
+inst_path= instancesKP/instanceTest250.txt
+opt_path= optimum/optimum250.txt
+PopSize= 10000
+mutaprob= 0
+rank1maxsize= 0.2
+crowdSavePercent= 0.1
+crowdRankPercent= 0.3
+
+STOP_CRITERIA
+MaxTime= 10
+MaxGener= 9999
+HyperVolCD= 100
+Min%Evol= 0
+GRASP%Start= 0.5
+
+GRASP_CRITERIA
+split= 0.5
+n_Delta= 10
+alpha= 0.9
+mutaprob= 0
+
+NSGA_CRITERIA
+TESTMODE= 1
+removeclone= 1
+parentarena= 1
+gnuplot= 0
+results= 1

@@ -1,0 +1,69 @@
+Pour compiler:
+Ouvrir le terminal.
+Se placer dans ce dossier (NSGA2) et entrer "make"
+
+Pour executer:
+Toujours dans le même dossier, entrer "./exemple <paramfile>"
+
+Pour consulter les résulats, ouvrir les images dans le sous-dossier "image/". Chaque graphe représente la population à une génération donnée.
+Le valeurs des objectifs sont aussi enregitrées pour chaque génération dans le sous-dossier "data/"
+
+Le fichier de paramètre doit être écrit tel que suit, il vous suffit de remplacer :
+
+PROBLEM_CRITERIA
+inst_path= STRING
+opt_path= STRING
+PopSize= INT
+mutaprob= DOUBLE
+rank1maxsize= DOUBLE
+crowdSavePercent= DOUBLE
+crowdRankPercent= DOUBLE
+
+STOP_CRITERIA
+MaxTime= INT
+MaxGener= INT
+HyperVolCD= INT
+Min%Evol= DOUBLE
+GRASP%Start= DOUBLE
+
+GRASP_CRITERIA
+split= DOUBLE
+n_Delta= INT
+alpha= DOUBLE
+
+NSGA_CRITERIA
+TESTMODE= BOOL
+removeclone= BOOL
+parentarena= BOOL
+gnuplot= BOOL
+results= BOOL
+
+Avec pour information et exemple :
+
+PROBLEM_CRITERIA
+inst_path= instancesKP/instanceTest250.txt		// lieu où se trouve l'instance du problème.
+opt_path= optimum/optimum250.txt 				// lieu où se trouve la solution optimale du problème si existe.
+PopSize= 250 									// Taille de la population, int.
+mutaprob= 0.1 									// pourcentage de mutation, double entre 0 et 1.
+rank1maxsize= 0.2 								// pourcentage maximale ( donc ici la moitié ) de rang 1 dans la population.
+crowdSavePercent= 0.1 							// pourcentage d'individu sauvé par le crowding2, double entre 0 et 1. Si supérieur à 1, valeur brute d'individu sauvé.
+crowdRankPercent= 0.3 							// pourcentage de rang servant au calcul du crowding2.
+
+STOP_CRITERIA
+MaxTime= 60  		// TempsMax en seconde de génération, int.
+MaxGener= 9999		// Nombre de génération Max, int.
+HyperVolCD= 100 	// Valeur de l'attente en génération entre chaque calcul d'hypervolume.
+Min%Evol= 0 		// Valeur de l'évolution minimale entre chaque calcul d'hypervolume, si non atteinte on arrête l'algorithme.
+GRASP%Start= 0.5 	// Pourcentage Maximal Requis de GRASP dans le rang 1 afin de commencer les calculs d'hypervolume
+
+GRASP_CRITERIA
+split= 100 		// pourcentage de population GRASP, double entre 0 et 1. Si supérieur ou égale à 1, valeur brute d'individu GRASP par direction.
+n_Delta= 100 	// nombre de direction GRASP par paire d'objectif, int.
+alpha= 0.9 		// pour la RCList du GRASP, double entre 0 et 1.
+
+NSGA_CRITERIA
+TESTMODE= 1 		// Boolean 0 ou 1, avec affichage écran 0 ou non 1.
+removeclone= 1 		// Boolean 0 ou 1, avec ou sans vérification et suppression de clone.
+parentarena= 1		// Boolean 0 ou 1, avec ou sans championnat entre parent.
+gnuplot= 1			// Boolean 0 ou 1, avec ou sans gnuplot durant les générations.
+results= 1			// Boolean 0 ou 1, avec ou sans écriture des résultats

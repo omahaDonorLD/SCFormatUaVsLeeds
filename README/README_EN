@@ -1,0 +1,72 @@
+To compile :
+1) open a terminal
+2) Place yourself in this directory ( NSGA2 ) and enter "make" ( without "" )
+
+To execute :
+In the same directory, enter "./NSGA2 <pathtoparamfile>" ( without "" and without <>)
+
+To see the results, open the picture in directory "image/". Each picture represent the population to a given generation.
+
+The objective value are saved in the directory "data/"
+
+
+The parameter file have to be written as follow :
+
+PROBLEM_CRITERIA
+inst_path= STRING
+opt_path= STRING
+PopSize= INT
+mutaprob= DOUBLE
+rank1maxsize= DOUBLE
+crowdSavePercent= DOUBLE
+crowdRankPercent= DOUBLE
+
+STOP_CRITERIA
+MaxTime= INT
+MaxGener= INT
+HyperVolCD= INT
+Min%Evol= DOUBLE
+GRASP%Start= DOUBLE
+
+GRASP_CRITERIA
+split= DOUBLE
+n_Delta= INT
+alpha= DOUBLE
+
+NSGA_CRITERIA
+TESTMODE= BOOL
+removeclone= BOOL
+parentarena= BOOL
+gnuplot= BOOL
+results= BOOL
+
+
+For information and example :
+
+PROBLEM_CRITERIA
+inst_path= instancesKP/instanceTest250.txt		// path to the problem instance
+opt_path= optimum/optimum250.txt 				// path to the optimal solution (if exists, else any string but no void )
+PopSize= 250 									// Population Size, int
+mutaprob= 0.1 									// Percentage of mutation, double between 0 and 1.
+rank1maxsize= 0.2 								// Maximal Percentage ( here 1/5th ) of Rank1 in the population, double between 0 and 2 ( 2 means no max ). 
+crowdSavePercent= 0.1 							// Percentage of Individu save by Crowding2, double between 0 and 1, if greater than 1 Raw value of individu saved
+crowdRankPercent= 0.3 							// Percentage of rank used to calculate Crowding2
+
+STOP_CRITERIA
+MaxTime= 60  		// Maximal Time in second to let NSGA2 process, int
+MaxGener= 9999		// Maximal number of generation to process, int
+HyperVolCD= 100 	// Cooldown ( in generation ) between two calculation of HyperVolume
+Min%Evol= 0 		// Value of minimal evolution ( in percentage ) asked between two successiv hypervolume calculation. If Value is not reached, the algorithm will stop.
+GRASP%Start= 0.5 	// Percentage Maximal Needed of GRASP individu in RANK1 before we start to calculate Hypervolume.
+
+GRASP_CRITERIA
+split= 100 		// Percentage of GRASP population, double between 0 and 1. if greater or equal than 1, raw value of individu created per direction
+n_Delta= 100 	// Number of GRASP direction per pair of objectif, int
+alpha= 0.9 		// For the RCList of GRASP, double between 0 and 1
+
+NSGA_CRITERIA
+TESTMODE= 1 		// Boolean 0 or 1, 0 = Information in Terminal, 1 = No information.
+removeclone= 1 		// Boolean 0 or 1, 0 = with clone, 1 = without clone.
+parentarena= 1		// Boolean 0 or 1, 0 = without tournament of parent, 1 = with tournament of parent
+gnuplot= 1			// Boolean 0 or 1, 0 = without gnuplot writings in generation, 1 = with gnuplot writings in generation
+results= 1			// Boolean 0 or 1, 0 = without writing results at the end, 1 = with writing result at the end
