@@ -89,7 +89,7 @@ Output::~Output()
 void Output::writeData(vector<Individu*> population , string output_path)
 {
 	ofstream out_data(output_path.c_str(), ios::out | ios::trunc);
-
+cout<<out_data<<" ok "<<endl;
 	if(out_data)
 	{
 		/* écriture des valeurs des objectifs de chaque individu de la population */
