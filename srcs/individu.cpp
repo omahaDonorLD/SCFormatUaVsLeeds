@@ -200,7 +200,7 @@ void Individu::initProblem(string instance_path) //parse le fichier d'instance d
 	}
 	else
 	{
-		cout<<"Erreur ouverture fichier"<<endl;
+		cout<<"Erreur ouverture fichier function "<< __FUNCTION__ <<endl;
 	}
 
 	read.close();

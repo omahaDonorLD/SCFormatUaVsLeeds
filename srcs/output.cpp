@@ -89,7 +89,7 @@ Output::~Output()
 void Output::writeData(vector<Individu*> population , string output_path)
 {
 	ofstream out_data(output_path.c_str(), ios::out | ios::trunc);
-cout<<out_data<<" ok "<<endl;
+
 	if(out_data)
 	{
 		/* écriture des valeurs des objectifs de chaque individu de la population */
@@ -104,7 +104,7 @@ cout<<out_data<<" ok "<<endl;
 	}
 	else
 	{
-		cerr<<"Erreur ouverture fichier"<<endl;
+		cerr<<"Erreur ouverture fichier function "<< __FUNCTION__ <<endl;
 	}
 }
 
@@ -139,7 +139,7 @@ void Output::writeSol(vector<Individu*> mySol )
 	}
 	else
 	{
-		cerr<<"Erreur ouverture fichier"<<endl;
+		cerr<<"Erreur ouverture fichier function "<< __FUNCTION__ <<endl;
 	}
 }
 
@@ -156,7 +156,7 @@ void Output::writeSol(vector<Individu*> mySol )
  */
 void Output::writeGeneration(vector<Individu*> population, int generation_num)
 {
-	cout<<"smthihn"<<generation_num<<" and "<< generation_path<<endl;
+
 	/* converstion de la génération actuelle en string */
 	ostringstream convert ;
     convert << generation_num ;

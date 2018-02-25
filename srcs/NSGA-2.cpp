@@ -25,7 +25,7 @@ using namespace std;
 int Gener = 0 ;	 			// Number of Iteration
 int n_Clone = 0 ;			// Number of clone removed in one generation.
 int n_Objectives = 0 ;		// Number of objectives
-string param_path = "../paramsFiles/param.txt" ; 						// chemin d'accès au fichier paramètre par défaut
+string param_path = "paramsFiles/param.txt" ; 						// chemin d'accès au fichier paramètre par défaut
 
 
 
@@ -164,7 +164,7 @@ int main(int argc,char** argv)
 	}
 	else
 	{
-		test = readparam( "../paramsFiles/param.txt" ) ;
+		test = readparam( "paramsFiles/param.txt" ) ;
 
 		if( !test )
 		{
@@ -183,9 +183,9 @@ int main(int argc,char** argv)
 
 	tbegin = time(NULL); // Commencement du temps de NSGA2
 
-	Output my_ouput("../data/solution",
-					"../pareto/pareto",
-					"../image/image",
+	Output my_ouput("data/solution",
+					"pareto/pareto",
+					"image/image",
 					opt_path, n_Objectives); // écriture des données initiales par gnuplot
 
 
@@ -361,7 +361,7 @@ int main(int argc,char** argv)
 			}
 			else
 			{
-				cerr<<"Erreur ouverture fichier"<<endl;
+				cerr<<"Erreur ouverture fichier function "<< __FUNCTION__ <<endl;
 			}
    	}
 
