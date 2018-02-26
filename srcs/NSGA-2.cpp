@@ -1299,7 +1299,7 @@ Individu* selectParentRND( vector<Individu*> myParent )
  */
 bool readparam(string param_path)
 {
-cout << "here " << param_path << endl;
+
 	ifstream read_param(param_path.c_str(), ios::in);
 	string temp ;
 
