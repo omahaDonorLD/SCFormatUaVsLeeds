@@ -15,17 +15,17 @@
 
 using namespace std;
 
-int Individu::nbr_items;
-int Individu::nbr_objectives;
-int Individu::nbr_constraints;
+int Individu::nbr_uavs;
+int Individu::nbr_objs;
+int Individu::nbr_cnstrts;
+int Individu::bound_1;
+int Individu::bound_2;
 
+int* Individu::capacities;
+float* Individu::weights;
 
-vector<int> Individu::capacities;
-vector<int> Individu::weights;
-vector<int> Individu::profits;
-
-vector<double> Individu::GRASPFIT;
-vector<int> Individu::RCList;
+//vector<double> Individu::GRASPFIT;
+//vector<int> Individu::RCList;
 
 
 
@@ -36,17 +36,17 @@ vector<int> Individu::RCList;
 Individu::Individu()
 {
 	/* Initialisation des items à 0 */
-	for(int item = 0; item < nbr_items; ++item)
+	for(int item = 0; item < nbr_uavs; ++item)
 	{
 		picked_objects.push_back(false);
 	}
 	/* Initialisation des objectifs à 0 */
-	for(int obj=0; obj<nbr_objectives; ++obj)
+	for(int obj=0; obj<nbr_objs; ++obj)
 	{
 		current_objective_value.push_back(0);
 	}
 	/* Initialisation des contraintes à 0 */
-	for(int con=0; con<nbr_constraints; ++con)
+	for(int con=0; con<nbr_cnstrts; ++con)
 	{
 		current_constraint_value.push_back(0);
 	}
@@ -75,17 +75,17 @@ Individu::Individu(Individu *toCopy)
 
 
 	/* Copie des items */
-	for(int item = 0; item < nbr_items; ++item)
+	for(int item = 0; item < nbr_uavs; ++item)
 	{
 		picked_objects.push_back(toCopy->picked_objects[item]);
 	}
 	/* Copie des objectifs */
-	for(int obj=0; obj<nbr_objectives; ++obj)
+	for(int obj=0; obj<nbr_objs; ++obj)
 	{
 		current_objective_value.push_back(toCopy->current_objective_value[obj]);
 	}
 	/* Copie des contraintes */
-	for(int con=0; con<nbr_constraints; ++con)
+	for(int con=0; con<nbr_cnstrts; ++con)
 	{
 		current_constraint_value.push_back(toCopy->current_constraint_value[con]);
 	}
@@ -107,7 +107,7 @@ Individu::~Individu()
  */
 int Individu::getNbrObjectives()
 {
-	return nbr_objectives;
+	return nbr_objs;
 }
 
 /**
@@ -141,7 +141,7 @@ void Individu::initProblem(string instance_path) //parse le fichier d'instance d
 {
 	ifstream read(instance_path.c_str(), ios::in);
 
-	nbr_constraints = 2;  //attention ici seulement pour notre type de sac à dos
+	nbr_cnstrts = 2;  //attention ici seulement pour notre type de sac à dos
 
 	if(read)
 	{
@@ -152,19 +152,19 @@ void Individu::initProblem(string instance_path) //parse le fichier d'instance d
 			read>>value;
 		}
 
-		read>>nbr_objectives; //lit le nombre d'objectifs
+		read>>nbr_objs; //lit le nombre d'objectifs
 
-		cout<<"nbr Objectif : "<<nbr_objectives<<endl;
-
-		read>>value;
-
-		read>>nbr_items; //lit le nombre d'item
-		cout<<"nbr items : "<<nbr_items<<endl;
+		cout<<"nbr Objectif : "<<nbr_objs<<endl;
 
 		read>>value;
+
+		read>>nbr_uavs; //lit le nombre d'item
+		cout<<"nbr items : "<<nbr_uavs<<endl;
+
+		read>>value;
 		read>>value;
 
-		for(int curr_obj = 0; curr_obj < nbr_objectives; ++curr_obj)
+		for(int curr_obj = 0; curr_obj < nbr_objs; ++curr_obj)
 		{
 			//cout<<"Objectif : "<<curr_obj<<endl;
 			read>>value; //lit le =
@@ -179,7 +179,7 @@ void Individu::initProblem(string instance_path) //parse le fichier d'instance d
 			if (curr_obj < 2) //on se limite ici à deux contraintes
 				capacities.push_back(nbr);
 
-			for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+			for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 			{
 				//cout<<"Item : "<<curr_item<<endl;
 				read>>value; read>>value;//lit le "item n "
@@ -245,12 +245,12 @@ int Individu::getContraintValue(int num_contraint)
 void Individu::computeObjectives()
 {
 	/* Calcule la valeur de chaque objectif */
-	for(int curr_obj = 0; curr_obj<nbr_objectives; ++curr_obj)
+	for(int curr_obj = 0; curr_obj<nbr_objs; ++curr_obj)
 	{
 		int curr_total = 0;
 
 		/* Calcule la valeur de l'objectif en cours */
-		for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+		for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 		{
 			curr_total+= picked_objects[curr_item] * getProfit(curr_item, curr_obj);
 		}
@@ -270,12 +270,12 @@ void Individu::computeObjectives()
 void Individu::computeConstraints()
 {
 	/* Calcule la valeur de chaque contrainte */
-	for(int curr_obj = 0; curr_obj<nbr_constraints; ++curr_obj)
+	for(int curr_obj = 0; curr_obj<nbr_cnstrts; ++curr_obj)
 	{
 		int curr_total = 0;
 
 		/* Calcule la valeur de la contrainte en cours */
-		for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+		for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 		{
 			curr_total+= picked_objects[curr_item] * getWeight(curr_item, curr_obj);
 		}
@@ -297,7 +297,7 @@ bool Individu::domine(Individu* to_compare)
 	bool strictly = false;
 
 	/* Vérification de la dominance suivant chaque objectif */
-	for(int obj = 0; obj<nbr_objectives; ++obj)
+	for(int obj = 0; obj<nbr_objs; ++obj)
 	{
 		if( this->getObjectiveValue(obj) < to_compare->getObjectiveValue(obj) )
 			return false; 		// Si il est dominé selon un objectif, l'on renvoie faux
@@ -319,11 +319,11 @@ bool Individu::domine(Individu* to_compare)
 bool Individu::isCloneOf(Individu* inIndividu)
 {
 	/* Vérification de la valeur des objectifs */
-	for( int i = 0; i < nbr_objectives ; ++i )
+	for( int i = 0; i < nbr_objs ; ++i )
 		if( this->getObjectiveValue(i) != inIndividu->getObjectiveValue(i) )
 			return false ;
 	/* Si la valeur des objectifs n'a pu déterminer qu'il n'était pas un clône, on vérifie chaque valeur d'item ( comparaison des codes génétiques ) */
-	for(int curr_item = 0 ; curr_item < nbr_items; ++curr_item)
+	for(int curr_item = 0 ; curr_item < nbr_uavs; ++curr_item)
 		if(this->picked_objects[curr_item] != inIndividu->picked_objects[curr_item])
 			return false;
 
@@ -342,7 +342,7 @@ bool Individu::isCloneOf(Individu* inIndividu)
  */
 Individu* Individu::getChildFrom(Individu* parent1, Individu* parent2)//crossOver à un point
 {
-	int cross_point = (rand()% nbr_items);
+	int cross_point = (rand()% nbr_uavs);
 
 	Individu* child1 = new Individu(parent1);
 
@@ -399,7 +399,7 @@ void Individu::restart()
 	vector<int> Picked1 ;
 
 	/* Recherche des items à 1 que l'on peut passer à 0 */
-	for( int curr_item = 0 ; curr_item < nbr_items ; curr_item++ )
+	for( int curr_item = 0 ; curr_item < nbr_uavs ; curr_item++ )
 	{
 		if( picked_objects[curr_item] )
 			Picked1.push_back(curr_item);
@@ -425,7 +425,7 @@ void Individu::restart2()
 	vector<int> topick = vector<int>() ;
 
 	/* Sélection des items à 0 à rajouter */
-	for( int curr_item = 0 ; curr_item < nbr_items ; curr_item++ )
+	for( int curr_item = 0 ; curr_item < nbr_uavs ; curr_item++ )
 	{
 
 		/* Vérification que l'item en cours est à 0 */
@@ -434,7 +434,7 @@ void Individu::restart2()
 			bool pickable = true ;
 
 			/* Vérification qu'il ne dépasse aucune contrainte si rajouté */
-			for( int curr_dim = 0 ; curr_dim < nbr_constraints && pickable ; curr_dim++)
+			for( int curr_dim = 0 ; curr_dim < nbr_cnstrts && pickable ; curr_dim++)
 				pickable = ( this->current_constraint_value[curr_dim] + getWeight(curr_item, curr_dim) ) < capacities[curr_dim]  ;
 
 			/* Si rajoutable on le rajoute dans les items à rajouter  */
@@ -466,7 +466,7 @@ void Individu::restart2()
 			{
 				bool pickable = true ;
 
-				for( int curr_dim = 0 ; curr_dim < nbr_constraints && pickable; curr_dim++)
+				for( int curr_dim = 0 ; curr_dim < nbr_cnstrts && pickable; curr_dim++)
 					pickable = ( this->current_constraint_value[curr_dim] + getWeight(topick[i], curr_dim) ) < capacities[curr_dim] ;
 
 				if( pickable )
@@ -498,7 +498,7 @@ void Individu::restart3()
 	vector<int> Picked1 ;
 
 	/* Recherche des items à 1 pour l'échange 1-1 */
-	for( int curr_item = 0 ; curr_item < nbr_items ; curr_item++ )
+	for( int curr_item = 0 ; curr_item < nbr_uavs ; curr_item++ )
 	{
 		if( picked_objects[curr_item] )
 			Picked1.push_back(curr_item);
@@ -512,14 +512,14 @@ void Individu::restart3()
 		Couple.push_back( vector<int>() ); // liste de possibilité des items à 1
 
 		/* Recherche des items à 0 pouvant s'échanger avec UN item à 1 */
-		for( int curr_item = 0 ; curr_item < nbr_items ; curr_item++ )
+		for( int curr_item = 0 ; curr_item < nbr_uavs ; curr_item++ )
 		{
 			if( !picked_objects[curr_item] )
 			{
 				bool pickable = true ;
 
 				/* Si l'échange ne brise pas les contraintes rajout de l'item à 0 dans la liste de possibilité de l'item à 1 */
-				for( int curr_dim = 0; curr_dim < nbr_constraints ; curr_dim++)
+				for( int curr_dim = 0; curr_dim < nbr_cnstrts ; curr_dim++)
 					pickable = pickable && ( ( current_constraint_value[curr_dim] + getWeight(curr_item, curr_dim) - getWeight(Picked1[i], curr_dim) ) < capacities[curr_dim] ) ;
 
 				if( pickable )
@@ -561,7 +561,7 @@ void Individu::restart3()
  */
 int Individu::getWeight(int num_item, int dimension)
 {
-	return weights[dimension * nbr_items  + num_item];
+	return weights[dimension * nbr_uavs  + num_item];
 }
 
 
@@ -575,7 +575,7 @@ int Individu::getWeight(int num_item, int dimension)
  */
 int Individu::getProfit(int num_item, int num_objective)
 {
-	return profits[num_objective * nbr_items  + num_item];
+	return profits[num_objective * nbr_uavs  + num_item];
 }
 
 
@@ -590,7 +590,7 @@ int Individu::getTotalWeight(int dimension)
 {
 	/*int total_weight = 0;
 
-	for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+	for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 	{
 		total_weight+= picked_objects[curr_item] * getWeight(curr_item, dimension);
 	}
@@ -622,7 +622,7 @@ bool Individu::constraintRespected(int dimension)
 bool Individu::isFeasible()
 {
 	/* Vérification que l'individu est valide ( ne dépasse pas les contraintes ) */
-	for(int curr_constraint = 0; curr_constraint < nbr_constraints; ++curr_constraint)
+	for(int curr_constraint = 0; curr_constraint < nbr_cnstrts; ++curr_constraint)
 		if( !(this->constraintRespected(curr_constraint)) )
 			return false;
 
@@ -655,24 +655,24 @@ void Individu::makeFeasible() //rend la solution faisable en retirant les élém
 		selObject = 0 ;
 		overflow = 0 ;
 
-		for( int curr_item = 1 ; curr_item < nbr_items && !picked_objects[curr_item-1] ; curr_item++ )
+		for( int curr_item = 1 ; curr_item < nbr_uavs && !picked_objects[curr_item-1] ; curr_item++ )
 		{
 			selObject = curr_item ;
 		}
 
-		for( int curr_constraint = 0 ; curr_constraint < nbr_constraints ; curr_constraint++ )
+		for( int curr_constraint = 0 ; curr_constraint < nbr_cnstrts ; curr_constraint++ )
 		{
 			if( !constraintRespected(curr_constraint) )
 			overflow += (current_constraint_value[curr_constraint]-capacities[curr_constraint])-getWeight(selObject, curr_constraint ) ;
 		}
 
-		for( int curr_item = selObject ; curr_item < nbr_items ; curr_item++ )
+		for( int curr_item = selObject ; curr_item < nbr_uavs ; curr_item++ )
 		{
 			if( picked_objects[curr_item] )
 			{
 				overflow2 = 0 ;
 
-				for( int curr_constraint = 0 ; curr_constraint < nbr_constraints ; curr_constraint++ )
+				for( int curr_constraint = 0 ; curr_constraint < nbr_cnstrts ; curr_constraint++ )
 				{
 					if( !constraintRespected(curr_constraint) )
 					overflow2 += (current_constraint_value[curr_constraint]-capacities[curr_constraint])-getWeight(curr_item, curr_constraint ) ;
@@ -692,16 +692,16 @@ void Individu::makeFeasible() //rend la solution faisable en retirant les élém
 		}
 
 		/*
-		for( int curr_item = 0 ; curr_item < nbr_items ; curr_item++ )
+		for( int curr_item = 0 ; curr_item < nbr_uavs ; curr_item++ )
 		{
 			overflow[curr_item] = 0 ;
 		}
 
-		for( int curr_item = 0 ; curr_item < nbr_items ; curr_item++ )
+		for( int curr_item = 0 ; curr_item < nbr_uavs ; curr_item++ )
 		{
 			if( picked_objects[curr_item] )
 			{
-				for( int curr_constraint = 0 ; curr_constraint < nbr_constraints ; curr_constraint++ )
+				for( int curr_constraint = 0 ; curr_constraint < nbr_cnstrts ; curr_constraint++ )
 				{
 					if( !constraintRespected(curr_constraint) )
 					overflow[curr_item] += (current_constraint_value[curr_constraint]-capacities[curr_constraint])-getWeight(curr_item, curr_constraint ) ;
@@ -712,7 +712,7 @@ void Individu::makeFeasible() //rend la solution faisable en retirant les élém
 
 		}
 
-		for( int curr_item = 1 ; curr_item < nbr_items ; curr_item++ )
+		for( int curr_item = 1 ; curr_item < nbr_uavs ; curr_item++ )
 		{
 			if( picked_objects[curr_item] )
 			{
@@ -747,7 +747,7 @@ void Individu::makeFeasible() //rend la solution faisable en retirant les élém
 
 				overflow = this->getContraintValue(curr_constraint) - capacities[curr_constraint]; // Le débordement.
 
-				for(int curr_item = 0; curr_item < nbr_items; ++curr_item) // recherche l'objet le plus lourd et le plus proche.
+				for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item) // recherche l'objet le plus lourd et le plus proche.
 				{
 					if( picked_objects[curr_item])
 					{
@@ -775,7 +775,7 @@ void Individu::makeFeasible() //rend la solution faisable en retirant les élém
 				}
 			}
 			curr_constraint++; //passe à la contrainte suivante.
-		}while(curr_constraint<nbr_constraints && !this->isFeasible()); //tant que la solution n'est pas faisable.
+		}while(curr_constraint<nbr_cnstrts && !this->isFeasible()); //tant que la solution n'est pas faisable.
 	}*/
 
 
@@ -800,12 +800,12 @@ void Individu::addObject(int num_item)
 		picked_objects[num_item] = 1 ;
 
 		/* Mise à jour des objectifs */
-		for( int curr_obj = 0 ; curr_obj < nbr_objectives ; curr_obj++ )
+		for( int curr_obj = 0 ; curr_obj < nbr_objs ; curr_obj++ )
 		{
 			current_objective_value[curr_obj] += getProfit(num_item, curr_obj) ;
 		}
 		/* Mise à jour des contraintes */
-		for( int curr_dim = 0 ; curr_dim < nbr_constraints ; curr_dim++ )
+		for( int curr_dim = 0 ; curr_dim < nbr_cnstrts ; curr_dim++ )
 		{
 			current_constraint_value[curr_dim] += getWeight(num_item, curr_dim) ;
 		}
@@ -829,12 +829,12 @@ void Individu::removeObject(int num_item)
 	{
 		picked_objects[num_item] = 0 ;
 		/* Mise à jour des objectifs */
-		for( int curr_obj = 0 ; curr_obj < nbr_objectives ; curr_obj++ )
+		for( int curr_obj = 0 ; curr_obj < nbr_objs ; curr_obj++ )
 		{
 			current_objective_value[curr_obj] += -1*getProfit(num_item, curr_obj) ;
 		}
 		/* Mise à jour des contraintes */
-		for( int curr_dim = 0 ; curr_dim < nbr_constraints ; curr_dim++ )
+		for( int curr_dim = 0 ; curr_dim < nbr_cnstrts ; curr_dim++ )
 		{
 			current_constraint_value[curr_dim] += -1*getWeight(num_item, curr_dim) ;
 		}
@@ -851,7 +851,7 @@ void Individu::randomize()
 {
 	isGRASP = 0 ;
 	/* Pour chaque item, on tire aléatoirement entre 0 et 1 */
-	for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+	for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 	{
 		picked_objects[curr_item] = (rand()%2);
 	}
@@ -876,25 +876,25 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 
 	//cout << " Start GRASPFIT " << endl ;
 
-	double fitness[nbr_items] ;
-	int fitweight[nbr_items];
+	double fitness[nbr_uavs] ;
+	int fitweight[nbr_uavs];
 	RCList.clear() ;
 	GRASPFIT = vector<double>() ;
 
 	/* Calcul des valeurs GRASP de chaque item en fonction des coefficients de direction */
-	for(int curr_item = 0; curr_item < nbr_items ; ++curr_item)
+	for(int curr_item = 0; curr_item < nbr_uavs ; ++curr_item)
 	{
 		fitness[curr_item] = 0 ;
 		fitweight[curr_item] = 0 ;
 
 		/* Calcul de la valeur de profit de l'item selon les coefficients de direction */
-		for( int curr_coef = 0; curr_coef < nbr_objectives ; ++curr_coef)
+		for( int curr_coef = 0; curr_coef < nbr_objs ; ++curr_coef)
 		{
 			fitness[curr_item] += getProfit(curr_item,curr_coef) * Coef[curr_coef];
 			// somme coef = 100
 		}
 		/* Calcul du poid de l'item selon les coefficients de direction */
-		for( int curr_weight = 0; curr_weight < nbr_constraints ; ++ curr_weight )
+		for( int curr_weight = 0; curr_weight < nbr_cnstrts ; ++ curr_weight )
 		{
 			fitweight[curr_item] += getWeight(curr_item, curr_weight);
 		}
@@ -903,7 +903,7 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 	}
 
 	/* Report des valeurs de fitness de chaque item dans GRASPFIT */
-	for( int i = 0 ; i < nbr_items ; ++i )
+	for( int i = 0 ; i < nbr_uavs ; ++i )
 	{
 		GRASPFIT.push_back( fitness[i] );
 	}
@@ -912,7 +912,7 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 	int cmax = 0 ;
 
 	/* Recherche des fitness min et max */
-	for( int i = 0; i < nbr_items ; ++i )
+	for( int i = 0; i < nbr_uavs ; ++i )
 	{
 			if( GRASPFIT[i] > cmax )
 			{
@@ -925,7 +925,7 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 	}
 
 	/* Création de la première RCList GRASP en fonction du coefficient glouton aléatoire alpha */
-	for( int i = 0; i < nbr_items ; ++i )
+	for( int i = 0; i < nbr_uavs ; ++i )
 	{
 		if( GRASPFIT[i] >= ( cmin + alpha*(cmax-cmin) ) )
 		{
@@ -967,7 +967,7 @@ void Individu::GRASP( double alpha )
     	int cmax = 0 ;
 
     	/* Recherche des fitness min et max en fonction des items non pris */
-    	for( int i = 0; i < nbr_items ; ++i )
+    	for( int i = 0; i < nbr_uavs ; ++i )
     	{
     		if( picked_objects[i] == 0)
     		{
@@ -983,7 +983,7 @@ void Individu::GRASP( double alpha )
     	}
 
     	/* Calcul des nouvelles RCList en fonction des items non pris */
-    	for( int i = 0; i < nbr_items ; ++i )
+    	for( int i = 0; i < nbr_uavs ; ++i )
     	{
     		if( GRASPFIT[i] >= ( cmin + alpha*(cmax-cmin) ) && picked_objects[i]==0 )
     		{
@@ -1011,18 +1011,18 @@ void Individu::GRASP( double alpha )
 void Individu::printToScreen()
 {
 	cout<<"Items: "<<endl;
-	for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+	for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 	{
 		cout<<"\tItem nb "<<curr_item<<" : "<<picked_objects[curr_item]<<endl;
 	}
 
 	cout<<"Constraints: "<<endl;
-	for(int curr_constraint = 0; curr_constraint < nbr_constraints; ++curr_constraint)
+	for(int curr_constraint = 0; curr_constraint < nbr_cnstrts; ++curr_constraint)
 	{
 		cout<<"\tConstraint nb "<<curr_constraint<<" : "<<getContraintValue(curr_constraint)<<" out of "<<capacities[curr_constraint]<<endl;
 	}
 	cout<<"Objectives: "<<endl;
-	for(int curr_fitness = 0; curr_fitness < nbr_objectives; ++curr_fitness)
+	for(int curr_fitness = 0; curr_fitness < nbr_objs; ++curr_fitness)
 	{
 		cout<<"\tObjective nb "<<curr_fitness<<" : "<<getObjectiveValue(curr_fitness)<<endl;
 	}
@@ -1044,7 +1044,7 @@ string Individu::toString()
 	string toReturn = "" ;
 
 	/* Lecture du code génétique et écriture de celui-ci */
-	for(int curr_item = 0; curr_item < nbr_items; ++curr_item)
+	for(int curr_item = 0; curr_item < nbr_uavs; ++curr_item)
 	{
 		if( picked_objects[curr_item] )
 			toReturn += "1" ;

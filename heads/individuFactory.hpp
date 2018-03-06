@@ -15,13 +15,12 @@ class IndividuFactory
 {
 	private:
 
-
 	public:
 		IndividuFactory(string instance_path);
 		~IndividuFactory();
 
 		Individu* createRandomSolution();
-		Individu* createGraspSolution( double alpha);
+		Individu* createGraspSolution(double alpha);
 
 };
 

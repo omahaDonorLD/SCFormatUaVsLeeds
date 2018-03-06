@@ -68,4 +68,4 @@ TESTMODE= 1 		// Bool: 0 = Information in Terminal, 1 = No information.
 removeclone= 1 		// Bool: 0 = with clone, 1 = without clone.
 parentarena= 1		// Bool: 0 = without tournament of parent, 1 = with tournament of parent
 gnuplot= 1		// Bool: 0 = without gnuplot writings in generation, 1 = with gnuplot writings in generation
-results= 1		// Bool: 0 = without writing results at the end, 1 = with writing result at the end
+results= 1		// Boolean 0 or 1, 0 = without writing results at the end, 1 = with writing result at the end

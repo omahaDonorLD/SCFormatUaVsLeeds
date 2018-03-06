@@ -32,7 +32,8 @@ string param_path = "paramsFiles/param.txt" ; 						// chemin d'accès au fichie
 /* Can be read in a param file */
 bool TESTMODE = 0 ;			// 0 If display infos, 1 otherwise ( still testing ).
 int PopSize = 100 ; 	 	// Population Size not used here because it's time dependent
-double split = 0.5 ; 		// Correspond au pourcentage de population graps => PopSize*k ici 50% si supérieur ou égale à 1 valeur brute d'individu par direction
+double split = 0.5 ; 		// Correspond au pourcentage de population grasp
+								// => PopSize*k ici 50% si supérieur ou égale à 1 valeur brute d'individu par direction
 int n_Delta = 3 ; 			// Correspond au nombre de Delta voulu par paire d'objectif
 double alpha = 0.7 ; 		// Correspond à l'alpha nécessaire à la RCList du GRASP.
 double mutaprob = 0.01 ; 	// Correspond à la chance de muter
@@ -149,7 +150,6 @@ int main(int argc,char** argv)
 	time_t tend ; // Variable de fin de temps, mise à jour après chaque génération permettant l'arrêt de celles-ci
 
 	bool test = false ;
-
 
 	/* Reading Param File */
 	if( argc > 1 )
@@ -390,34 +390,30 @@ int main(int argc,char** argv)
 void generate(IndividuFactory usine, vector<Individu*> &myResult )
 {
 
-	bool clone ;
-	int sum = 0 ;
-	int n_Grasp = 0 ;
+	bool clone;
+	int sum = 0;
+	int n_Grasp = 0;
 
-	vector<int*> Coef ;
+	vector<int*> Coef;
 
 	Individu* temp ;
 
-	/*
-
-	Création des directions GRASP
-
-	*/
+	// Création des directions GRASP
 	if( n_Delta > 2 )
 	{
+		int delta[n_Delta-2] ;
+		/*Coefficient que l'on trouvera entre chaque pair d'objectif.
+		 * Given the convexe combination of 2 objectives and a parameter alpha,
+		 * 	seek : alpha*ob1+(1-alpha)*ob2  with alpha varying to take into account different degree of each objective.*/
 
-		int delta[n_Delta-2] ; // Coefficient que l'on trouvera entre chaque pair d'objectif
-
-		for( int i = 0 ; i < n_Delta-2 ; ++i ) // Calcul des Coefficients que l'on trouvera entre chaque pair d'objectif de 0 à 100 par saut de 100/n_Delta
+		/* Calcul des Coefficients que l'on trouvera entre chaque pair d'objectif de 0 à 100 par saut de 100/n_Delta */
+		for( int i = 0 ; i < n_Delta-2 ; ++i ) 
 		{
-			delta[i] = (i+1)*100/(n_Delta-1)  ;
+			delta[i] = (i+1)*100/(n_Delta-1);
 		}
 
-		/*
-		Ci après, Création des coefficients entre chaque objectifs
-		*/
-
-		sum = n_Objectives ;
+		/* Ci après, Création des coefficients entre chaque objectifs */
+		sum=n_Objectives ;
 		int verif ;
 
 		for( int i = 1 ; i < n_Objectives ; ++i )
@@ -444,6 +440,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 			for( int j = 0 ; j < n_Objectives ;++j )
 				Coef[i][j] = 0 ;
 
+			/* Each objective has a coefficient that allows it to dominate all the others */
 			Coef[i][i] = 100 ;
 		}
 
@@ -454,27 +451,37 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 			for( int j = 0 ; j < n_Objectives ;++j )
 				Coef[i][j] = 0 ;
 
+			/* Incomplete as columns are supposed to be functions of the number of objs, but instead only 2:counti and countj */
+			/* Caution, the lines are function of "verif", that is == for( int i = 1 ; i < n_Objectives ; ++i )	sum += (n_Delta-2)*i ;*/
+			/* ex : n_delta = 10, if 2 objs, then verif=sum=2+8=10, if 3 objs, verif=sum=3+8+16=27, if 4 objs, verif=sum=4+8+16+24=27,etc. */
+			/* why this choice ? : n_objs first lines are not available, and the remaining are combinations of 2 on the number of objectives */
 			Coef[i][counti] = delta[countk] ;
 			Coef[i][countj] = 100 - delta[countk];
 
+			/* Really works. For example n_objs==4, given number of lines added to n_objs first lines is :(n_Delta-2) lines fill
+			 * cols (objs) 0 and 1, then (n_Delta-2) lines for col 0 and 2. Next, as j, which is at position 2, will overflow the
+			 * objectives if incremented, i is the one that is switched to 1 and j to 1+1 which is 2 => (n_Delta-2) next lines
+			 * to fill columns 1 and 2, and so on and so forth. */
 			countk = (countk + 1) % (n_Delta-2) ;
-
 			if( countk == 0 )
-			{
-				countj = (countj + 1) % n_Objectives ;
-			}
+			{countj = (countj + 1) % n_Objectives;}
 			if( countj == 0 )
 			{
 				counti ++ ;
 				countj = counti+1 ;
 			}
-
 		}
 
-		if( n_Objectives > 2 ) // Création d'une direction "centrale" si le nombre d'objectif est supérieur à 2
+
+		// Création d'une direction "centrale" si le nombre d'objectif est supérieur à 2
+		// Creates "central" with equivalent linear combinations direction
+		if( n_Objectives > 2 )
 		{
 			Coef.push_back( new int[n_Objectives] ) ;
 
+			/* Remainder, for n_Objectives > 2 : sum = 1 + n_objs+ {for i in 1 to n_Objs-1}(n_Delta-2)*i */
+			/* Builds equivalents coefficients for all the objectives */
+			/* In addition to direction  */
 			for(int i = 0 ; i < n_Objectives ; ++i )
 				Coef[sum-1][i] = 100/n_Objectives ;
 		}
@@ -484,10 +491,8 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 	}
 	else if( n_Delta == 2 )
 	{
+		
 		sum = n_Objectives ;
-
-		if( n_Objectives > 2 )
-			sum++ ;
 
 		for( int i = 0 ; i < n_Objectives ; ++i )
 		{
@@ -502,6 +507,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 
 		if( n_Objectives > 2 ) // Création d'une direction "centrale" si le nombre d'objectif est supérieur à 2
 		{
+			sum++ ;
 			Coef.push_back( new int[n_Objectives] ) ;
 
 			for(int i = 0 ; i < n_Objectives ; ++i )
@@ -527,6 +533,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 
 		int counti = 0 ;
 		int countj = 1 ;
+
 
 		for( int i = 0 ; i < verif ; ++i )
 		{
@@ -564,6 +571,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 	}
 	else
 	{
+		/* Half the population is splitted for all direction*/
 		n_Grasp = (int) PopSize*split / Coef.size() ;
 	}
 
@@ -573,14 +581,9 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 
 
 
-	/*
-
-	Création des individus GRASP
-
-	*/
+	/* Création des individus GRASP */
 	for( int p = 0 ; p < sum ; ++p )
 	{
-
 		Individu::createGRASPFIT( Coef[p], alpha ) ;
 
 		for( int i = 0 ; i < n_Grasp ; ++i )
@@ -1493,8 +1496,8 @@ void quality(string opt_path, vector< vector<Individu*> > &ranKing)
 
 
 
-/*!
- *	\brief Calcul la différence d'hypervolume entre deux Rang1 de générations différentes.
+/**
+ *	\brief Gives the hypervolume deviation of two Rang1 of different generation.
  *
  *	Permet le calcul de l'hypervolume du Rang1 de la génération actuelle et de le comparer avec le dernier HyperVolume calculé afin d'en obtenir une qualité d'avancée de la population.
  *

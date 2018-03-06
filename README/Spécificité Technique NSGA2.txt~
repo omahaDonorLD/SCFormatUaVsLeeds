@@ -91,7 +91,7 @@
 		* static int getNbrObjectives() = Permet de récupérer le nombre d'objectif du problème
 
 	
-		* int getRank()			= Permet de récupérer le rang d'un individu
+		* int getRank() 				= Permet de récupérer le rang d'un individu
 		* void setRank(int in_rank) 	= Permet de donner un rang à un individu
 
 
