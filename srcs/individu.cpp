@@ -24,7 +24,7 @@ int Individu::bound_2;
 int* Individu::capacities;
 float* Individu::weights;
 
-//vector<double> Individu::GRASPFIT;
+vector<double> Individu::GRASPFIT;
 //vector<int> Individu::RCList;
 
 
@@ -875,7 +875,6 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 {
 
 	//cout << " Start GRASPFIT " << endl ;
-
 	double fitness[nbr_uavs] ;
 	int fitweight[nbr_uavs];
 	RCList.clear() ;

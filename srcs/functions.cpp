@@ -1,26 +1,20 @@
-#include "../heads/individuFactory.hpp"
+#include "../heads/functions.hpp"
 
-IndividuFactory::IndividuFactory(string instance_path)
+bool inRange(aNode* uav, double range, aNode ground)
 {
-	Individu::initProblem(instance_path);
-}
+	return ( sqrt( pow2( uav->x - ground->x ) + pow2( uav->y - ground->y ) ) > range ? false, true);
+};
 
-IndividuFactory::~IndividuFactory()
+int RO(aNode *sln, int n)
 {
 
-}
+};
 
-Individu* IndividuFactory::createRandomSolution()
+int FTO(aNode *sln, int n)
 {
-	Individu* toReturn = new Individu();
-	toReturn->randomize();
+};
 
-	return toReturn;
-}
-
-Individu* IndividuFactory::createGraspSolution(double alpha)
+int CO(aNode *sln, int n)
 {
-    Individu* toReturn = new Individu();
-    toReturn->GRASP(alpha) ;
-    return toReturn;
-}
+
+};
