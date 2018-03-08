@@ -4,6 +4,7 @@
 //Individu pour le NSGA-II, résolution du problème CO, FTO, RO
 #include "functions.hpp"
 
+int nbr_inds;					// Number of individuals composing a solution
 int nbr_uavs;					// number of UaVs for an individ
 int nbr_objs;					// 3 : CO, FTO, RO
 int nbr_constraints;	// connectivity cstraint, bounds
@@ -22,12 +23,8 @@ typedef struct Individu {
 		//vector<int> current_constraint_value;	// valeur totale actuelle des contraintes
 		//int getTotalWeight(int dimension);	// retourne la valeur de la contrainte "dimension"
 
-
-		bool isFeasible();					// check if solution is feasible
-		void makeFeasible();
-
-		void addObject(int grnd_node);		// rajoute l'item "num_item" au sac à dos si absent
-		void removeObject(int grnd_node);	// supprime l'item "num_item" du sac à dos si présent
+		//void addObject(int grnd_node);		// rajoute l'item "num_item" au sac à dos si absent
+		//void removeObject(int grnd_node);	// supprime l'item "num_item" du sac à dos si présent
 
 		int rank; 							// rang de l'individu
 
@@ -88,6 +85,16 @@ typedef struct cstrtInfo{
 	int *cnstrtsViol;
 };
 
-cstrtInfo cnstrtViolated(Individu* ind);	// check the constraints the individual violates
+
+
+Individu* closestIndiv(Individu* an_indiv, double radius);		// Part of making the covering constraint satisfiable. Finds the closest individuals close to a given one (picked randomly) and with respect to a given radius.
+
+// constraints
+bool isFeasible(Individu* aSolution);					// check if a solution is feasible
+void makeFeasible(Individu* aSolution);				// fix the violated constraints of the solution
+cstrtInfo cnstrtViolated(Individu* an_indiv);	// check the constraints that the individual violates
+void makeConnected(Individu* aSolution);			// fix the connectivity constraint of the solution
+void coverAllGrnds(Individu* aSolution);			// covers all the grounds with the minimum number of uavs
+
 
 #endif
