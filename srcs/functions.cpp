@@ -1,8 +1,8 @@
 #include "../heads/functions.hpp"
 
-bool inRange(aNode* uav, double range, aNode ground)
+bool inRange(aUav* uav, aNode ground)
 {
-	return ( sqrt( pow2( uav->x - ground->x ) + pow2( uav->y - ground->y ) ) > range ? false, true);
+	return ( sqrt( pow2( uav->idx - ground->x ) + pow2( uav->y - ground->y ) ) > range ? false, true);
 };
 
 int RO(aNode *sln, int n)

@@ -28,10 +28,8 @@ typedef struct Individu {
 
 		int rank; 							// rang de l'individu
 
-
-
-		void computeObjectives();			// calcule et met à jour les valeurs des objectifs de l'individu
-		void computeConstraints();			// calcule et met à jour les valeurs des contraintes de l'individu
+		//void computeObjectives();			// calcule et met à jour les valeurs des objectifs de l'individu
+		//void computeConstraints();		// calcule et met à jour les valeurs des contraintes de l'individu
 
 
 
@@ -80,21 +78,23 @@ typedef struct Individu {
 		static void testData();
 };
 
-typedef struct cstrtInfo{
-	int nViol;
-	int *cnstrtsViol;
-};
+typedef struct cstrt_info{
+	int n_violtd;
+	int *index_cnstrts_violtd;
+}cstrt_info;
 
 
 
 Individu* closestIndiv(Individu* an_indiv, double radius);		// Part of making the covering constraint satisfiable. Finds the closest individuals close to a given one (picked randomly) and with respect to a given radius.
 
 // constraints
-bool isFeasible(Individu* aSolution);					// check if a solution is feasible
-void makeFeasible(Individu* aSolution);				// fix the violated constraints of the solution
-cstrtInfo cnstrtViolated(Individu* an_indiv);	// check the constraints that the individual violates
-void makeConnected(Individu* aSolution);			// fix the connectivity constraint of the solution
-void coverAllGrnds(Individu* aSolution);			// covers all the grounds with the minimum number of uavs
+bool isFeasible(Individu* aSolution);			// check if a solution is feasible
+void makeFeasible(Individu* aSolution);			// fix the violated constraints of the solution
+cstrt_info cnstrtVioltd(Individu* an_indiv);	// check the constraints that the individual violates
+void makeConnected(Individu* aSolution);		// fix the connectivity constraint of the solution
+void coverAllGrnds(Individu* aSolution);		// covers all the grounds with the minimum number of uavs
 
+// objectives
+void updateFitness(Individu* aSolution);		// computes the fitness of the solution
 
 #endif

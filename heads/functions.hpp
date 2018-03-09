@@ -16,14 +16,14 @@ using namespace std;
 
 // Each node have coordinates
 typedef struct aNode {
-  int index=-1;// Unique, defines a point : for either
+	int index=-1;// Unique, defines a point : for either a ground node or a uav
 	double x=0.;
 	double y=0.;
 }aNode;
 
 typedef struct aUav{
-  aNode id;
-  int covers=-1;	// If value is less than 0 then aNode is a ground node. A UaV contains at least 0 ground nodes
+	aNode id;
+	int covers=-1;	// A UaV contains at least 0 ground nodes
 	double range=-1.;  	// If "contains" < 0 then is ground node and its range is also < 1
   bool active=false;  // ground nodes are always unactive. a uav can also be
 }aUav;
