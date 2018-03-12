@@ -1,3 +1,6 @@
+Questions to D G Reina :
+	- Which strategy for constructing first solution. 
+
 
 Grasp :
 
@@ -13,4 +16,16 @@ Grasp :
 		sum += (n_Delta-2)*i ;
 	=> if n_delta=10, and if 2 objs, then sum=2+8=10, if 3 objs, sum=3+8+16=27, etc.
 
-(++)
+(++) Construction first feasible solution : connected + all nodes covered.
+	For each method compare time, complexity, results,
+	1. K Means (simple clustering)
+	2. Spread the UaVs uniformly over the map : map size / (2*radius-fixed constant). Fix a constant so that pair of UaVs share a space equals to that constant (kind of)
+
+Objectives : 1.get a coverage of uavs that depends on the ground nodes and some parameters : number of uavs needed for RO
+		2. minimize the number of uavs needed for the task
+
+
+Mutation :
+	heuristic strategies (check best) : change coordinates of uav : 1) randomly, or 2) pick uav with lowest fitness and apply move wrt delta
+
+constraint (min) : 1 if violated. Since objective is to min, what if multiply obj*constrt ? Wrong : if obj==0 => obj*cnstrt==0. Not an option in our application, but still, easier to keep sum(cnstrts)==0.

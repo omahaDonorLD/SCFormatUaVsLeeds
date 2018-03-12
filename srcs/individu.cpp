@@ -1,31 +1,7 @@
-/**
- * \file	individu.cpp
- * \author    Willaime Jocelyn, Delmee Quentin
- * \version   1.0
- * \date       12 Mars 2014
- * \brief       Classe contenant les méthodes pour utiliser le moteur NSGA-II sur un problème knapsack multi-objectif.
- *
- * \details   Les attributs et méthodes plublics sont utilisé par le moteur.
- *				Les  attributs et méthodes privées sont des calculs propres à ce type de problème.
- *				Les attributs et méthodes statiques (de classes) sont propre aux paramètres du problèmes, les autres concernent  une solution donnée.
- */
 
 #include "../heads/individu.hpp"
 
-
 using namespace std;
-
-int Individu::nbr_uavs;
-int Individu::nbr_objs;
-int Individu::nbr_cnstrts;
-int Individu::bound_1;
-int Individu::bound_2;
-
-int* Individu::capacities;
-float* Individu::weights;
-
-vector<double> Individu::GRASPFIT;
-//vector<int> Individu::RCList;
 
 
 
@@ -102,33 +78,12 @@ Individu::~Individu()
 
 
 /**
- * \brief       Renvoie le nombre d'objectif
  *
  */
-int Individu::getNbrObjectives()
+bool inRange(aUav* uav, aNode ground)
 {
-	return nbr_objs;
-}
-
-/**
- * \brief       Renvoie le rang de l'individu
- *
- */
-int Individu::getRank()
-{
-	return rank;
-}
-
-/**
- * \brief      Donne le rang de l'individu
- *
- * \param in_rank	Futur rang de l'individu
- */
-void Individu::setRank(int in_rank)
-{
-	rank = in_rank;
-}
-
+	return ( sqrt( pow2( uav->idx - ground->x ) + pow2( uav->y - ground->y ) ) > range ? false, true);
+};
 
 
 /**

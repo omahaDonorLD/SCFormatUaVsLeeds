@@ -12,15 +12,13 @@
 #include <stdio.h>
 
 
-#include "../heads/individuFactory.hpp"
 #include "../heads/individu.hpp"
 #include "../heads/output.hpp"
+#include "../heads/tools.hpp"
 
 #define ERROR(x)  fprintf(stderr, x), fprintf(stderr, "\n"), exit(1)
 
 using namespace std;
-
-
 
 int Gener = 0 ;	 			// Number of Iteration
 int n_Clone = 0 ;			// Number of clone removed in one generation.
@@ -102,7 +100,6 @@ int removeClone( vector< vector<Individu*> > &toReturn );
 vector< vector<Individu*> > sortRank( vector<Individu*> &myPop );
 
 Individu* selectParentRND( vector<Individu*> myParent );
-bool readparam(string param_path) ;
 void quality(string opt_path, vector< vector<Individu*> > &ranKing) ;
 
 void extractSol( vector<Individu*> &myPop, vector<Individu*> &ranKing, Output my_ouput );
@@ -112,7 +109,7 @@ double spread( vector< Individu* > result );
 
 
 
-//methodes de calcul d'hypervolume de Zitzler
+// from Zitzler, methods for computing hypervolume 
 int  Dominates(double  point1[], double  point2[], int  noObjectives);
 void  Swap(double  *front[], int  i, int  j);
 int  FilterNondominatedSet(double  *front[], int  noPoints, int  noObjectives);
@@ -1300,94 +1297,6 @@ Individu* selectParentRND( vector<Individu*> myParent )
  *	\return un booléen, TRUE si le fichier a été lu, FALSE sinon.
  *
  */
-bool readparam(string param_path)
-{
-
-	ifstream read_param(param_path.c_str(), ios::in);
-	string temp ;
-
-	if( read_param ) // si le fichier existe, on continue notre lecture.
-	{
-	 	/* PROBLEM_CRITERIA */
-
-	 	read_param >> temp ;
-	 	read_param >> temp ;
-	 	read_param >> inst_path ;
-
-	 	read_param >> temp ;
-	 	read_param >> opt_path ;
-
-	 	read_param >> temp ;
-	 	read_param >> PopSize ;
-
-	 	read_param >> temp ;
-	 	read_param >> mutaprob ;
-
-	 	read_param >> temp ;
-	 	read_param >> rank1maxsize ;
-
-	 	read_param >> temp ;
-	 	read_param >> crowdSave ;
-
-	 	read_param >> temp ;
-	 	read_param >> crowdTotal ;
-
-	 	/* STOP_CRITERIA */
-
-	 	read_param >> temp ;
-		read_param >> temp ;
-	 	read_param >> MaxTime ;
-
-	 	read_param >> temp ;
-	 	read_param >> MaxGener ;
-
-	 	read_param >> temp ;
-	 	read_param >> HyperVolCD ;
-
-	 	read_param >> temp ;
-	 	read_param >> PercentEvolution ;
-
-	 	read_param >> temp ;
-	 	read_param >> GRASPercent ;
-
-	 	/* GRASP_CRITERIA */
-
-	 	read_param >> temp ;
-	 	read_param >> temp ;
-	 	read_param >> split ;
-
-	 	read_param >> temp ;
-	 	read_param >> n_Delta ;
-
-	 	read_param >> temp ;
-	 	read_param >> alpha ;
-
-	 	/* NSGA_CRITERIA */
-
-	 	read_param >> temp ;
-	 	read_param >> temp ;
-		read_param >> TESTMODE ;
-
-	 	read_param >> temp ;
-	 	read_param >> removeclone ;
-
-	 	read_param >> temp ;
-	 	read_param >> parentarena ;
-
-	 	read_param >> temp ;
-	 	read_param >> gnuplot ;
-
-	 	read_param >> temp ;
-	 	read_param >> results ;
-
-	 	return 1 ;
-	}
-	else
-	{
-		cout << " Param File Not Found, Program Will Terminate. " << endl;
-		return 0 ;
-	}
-}
 
 
 

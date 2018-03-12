@@ -16,19 +16,19 @@ using namespace std;
 
 // Each node have coordinates
 typedef struct aNode {
-	int index=-1;// Unique, defines a point : for either a ground node or a uav
-	double x=0.;
-	double y=0.;
+	int index;// Unique, defines a point : for either a ground node or a uav
+	double x;
+	double y;
 }aNode;
 
 typedef struct aUav{
 	aNode id;
-	int covers=-1;	// A UaV contains at least 0 ground nodes
-	double range=-1.;  	// If "contains" < 0 then is ground node and its range is also < 1
-  bool active=false;  // ground nodes are always unactive. a uav can also be
+	//long gene=0;
+	int covers;	// A UaV contains at least 0 ground nodes
+	double range;  	// If "contains" < 0 then is ground node and its range is also < 1
+  bool active;  // ground nodes are always unactive. a uav can also be
 }aUav;
 
-bool inRange(aUav* uav, aNode ground);
 int RO(aUav *sln, int n);
 int FTO(aUav *sln, int n);
 int CO(aUav *sln, int n);
