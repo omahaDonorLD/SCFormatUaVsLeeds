@@ -9,7 +9,7 @@ Individu** RCList;			// RCList correspondant à GRASPFIT pour un alpha donné
 
 typedef struct Solution {
 		//long** gene;		// *to develop later if time* of size "nbr_uavs"*gene. Gene : sequence of 0 and 1 (int) for each UaV
-		int nbr_inds;
+		int nbr_uavs;
 		aUav* uavs;			// number of in the solution
 		int* rank;
 		double* profit;		// Fitness, based on 3 profit value : CO (Coverage), FTO (Fault tole), RO (Redund)

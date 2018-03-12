@@ -30,7 +30,7 @@ string param_path = "paramsFiles/param.txt" ; 						// chemin d'accès au fichie
 /* Can be read in a param file */
 bool TESTMODE = 0 ;			// 0 If display infos, 1 otherwise ( still testing ).
 int PopSize = 100 ; 	 	// Population Size not used here because it's time dependent
-double split = 0.5 ; 		// Correspond au pourcentage de population grasp
+double grasp_split = 0.5 ; 		// Correspond au pourcentage de population grasp
 								// => PopSize*k ici 50% si supérieur ou égale à 1 valeur brute d'individu par direction
 int n_Delta = 3 ; 			// Correspond au nombre de Delta voulu par paire d'objectif
 double alpha = 0.7 ; 		// Correspond à l'alpha nécessaire à la RCList du GRASP.
@@ -109,7 +109,7 @@ double spread( vector< Individu* > result );
 
 
 
-// from Zitzler, methods for computing hypervolume 
+// from Zitzler, methods for computing hypervolume
 int  Dominates(double  point1[], double  point2[], int  noObjectives);
 void  Swap(double  *front[], int  i, int  j);
 int  FilterNondominatedSet(double  *front[], int  noPoints, int  noObjectives);
@@ -404,7 +404,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 		 * 	seek : alpha*ob1+(1-alpha)*ob2  with alpha varying to take into account different degree of each objective.*/
 
 		/* Calcul des Coefficients que l'on trouvera entre chaque pair d'objectif de 0 à 100 par saut de 100/n_Delta */
-		for( int i = 0 ; i < n_Delta-2 ; ++i ) 
+		for( int i = 0 ; i < n_Delta-2 ; ++i )
 		{
 			delta[i] = (i+1)*100/(n_Delta-1);
 		}
@@ -488,7 +488,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 	}
 	else if( n_Delta == 2 )
 	{
-		
+
 		sum = n_Objectives ;
 
 		for( int i = 0 ; i < n_Objectives ; ++i )
