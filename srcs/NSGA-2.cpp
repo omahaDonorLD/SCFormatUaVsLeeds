@@ -20,29 +20,9 @@
 
 using namespace std;
 
-int Gener = 0 ;	 			// Number of Iteration
-int n_Clone = 0 ;			// Number of clone removed in one generation.
-int n_Objectives = 0 ;		// Number of objectives
-string param_path = "paramsFiles/param.txt" ; 						// chemin d'accès au fichier paramètre par défaut
-
 
 
 /* Can be read in a param file */
-bool TESTMODE = 0 ;			// 0 If display infos, 1 otherwise ( still testing ).
-int PopSize = 100 ; 	 	// Population Size not used here because it's time dependent
-double grasp_split = 0.5 ; 		// Correspond au pourcentage de population grasp
-								// => PopSize*k ici 50% si supérieur ou égale à 1 valeur brute d'individu par direction
-int n_Delta = 3 ; 			// Correspond au nombre de Delta voulu par paire d'objectif
-double alpha = 0.7 ; 		// Correspond à l'alpha nécessaire à la RCList du GRASP.
-double mutaprob = 0.01 ; 	// Correspond à la chance de muter
-double rank1maxsize = 0.5 ;	// Correspond au pourcentage de la population que peut représenter le rang 1, augmentation de la taille de la population si supérieur.
-double crowdSave = 0.1 ;	// Correspond au pourcentage de la population sauver par la seconde valeur de crowding, si supérieur à 1 valeur brute d'individu sauvé
-double crowdTotal = 0.5 ;	// Correspond au pourcentage de rang que l'on considère pour le calcul du crowding2, ici 50%.
-int HyperVolCD = 10 ;
-double PercentEvolution = 0.1 ;
-double GRASPercent = 0.5 ;
-int MaxGener = 1000 ;
-int MaxTime = 1000 ;
 string inst_path = "../instances/instanceTest250.txt" ; 	// chemin d'accès au fichier problème par défaut
 string opt_path = "../optimum/optimum250.txt" ; 			// chemin d'accès à la réponse du problème par défaut
 bool removeclone = 1 ;		// 0 si on garde les clones, 1 sinon.
@@ -143,33 +123,13 @@ Fin de la déclaration des fonctions
  */
 int main(int argc,char** argv)
 {
-	time_t tbegin ; // Variable de début de temps, au lancement de l'algorithme, après que l'utilisateur ait entré les données nécessaires.
-	time_t tend ; // Variable de fin de temps, mise à jour après chaque génération permettant l'arrêt de celles-ci
+	time_t tbegin;
+	time_t tend;
 
 	bool test = false ;
 
-	/* Reading Param File */
-	if( argc > 1 )
-	{
-		param_path = argv[1] ;
-		test = readparam( param_path ) ;
-
-		if( !test )
-		{
-			return 0 ;
-		}
-	}
-	else
-	{
-		test = readparam( "paramsFiles/param.txt" ) ;
-
-		if( !test )
-		{
-			return 0 ;
-		}
-	}
-
-
+	// init data and parameters
+	readData(argv) ;
 
 	/* Initialization */
 	srand(time(NULL)) ; // mise à jour de la seed random

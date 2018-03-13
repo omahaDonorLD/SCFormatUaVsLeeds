@@ -1,0 +1,29 @@
+#!/usr/bin/python2.7
+x=[]
+y=[]
+with open('x_positions.txt') as f:
+	lines=f.readlines()
+	for line in lines :
+		row=line.rstrip(' \r\n')
+		x.append(row)
+
+with open('y_positions.txt') as f:
+	lines=f.readlines()
+	for line in lines :
+		row=line.rstrip(' \r\n')
+		y.append(row)
+
+del x[len(x)-1]
+del y[len(y)-1]
+
+for i in range(0,len(x)):
+	x[i]=float(x[i])
+
+for i in range(0,len(y)):
+	y[i]=float(y[i])
+
+with open('ref_pbrlm.csv', 'w') as f:
+	f.write(str(len(y))+"\n")
+	for i in range(0,len(y)) :
+		f.write(str(x[i])+","+str(y[i])+"\n")
+

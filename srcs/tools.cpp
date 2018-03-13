@@ -3,14 +3,14 @@
 
 using namespace std;
 
-void readData(char** input_param, char** input_data)
+void readData(char** argv)
 {
 	FILE* fp;
 	char *tmp[100];// Just a buffer
 	int tmp2;// this one too
 
 	// parameters
-	fp=fopen(input_param,"r");
+	fp=fopen(argv[1],"r");
 	if( !fp ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	// Problem parameters
@@ -54,8 +54,8 @@ void readData(char** input_param, char** input_data)
 	fclose(fp);
 
 
-	// data
-	fp=fopen(input_data,"r");
+	// read data (coordinates ground nodes)
+	fp=fopen(argv[2],"r");
 	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	/* allocate memory for ground nodes */
