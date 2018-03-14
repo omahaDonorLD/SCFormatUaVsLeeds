@@ -56,13 +56,23 @@ void readData(char** argv)
 
 	// read data (coordinates ground nodes)
 	fp=fopen(argv[2],"r");
+
+	// read number of available uavs
+	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}	
+	UAVs_Range=malloc(max_uav_avail*sizeof(double));
+	int i=0;
+	// read range of each of them 
+	for(i=0;i<max_uav_avail;i++)
+		fscanf(fp,"%lf", &UAVs_Range[i]);
+
+
+	// read number of ground nodes and then the coordinates
 	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	/* allocate memory for ground nodes */
 	GRNDS=malloc(nbr_grnds*sizeof(aNode));
 	if(GRNDS==NULL){ /* memory allocation failure */ MEMO_FAIL(__LINE__, __FILE__, __FUNCTION__); }
 
-	int i=0;
 	for(i=0;i<nbr_grnds;i++)
 	{
 		GRNDS[i].index=i;// Unique, defines a point : for either a ground node or a uav
@@ -71,3 +81,28 @@ void readData(char** argv)
 
 	fclose(fp);
 }
+
+
+void writeData(sln a_sln){
+	int i=0;
+	FILE *f;
+	char path[30];
+	char buff[30];
+/*
+	strcpy(path,"../optimum/optimum250.txt");
+	strcpy(buff,argv[4]);
+	strtok(buff,"/");
+	strcat(path,strtok(NULL,"/"));
+
+	f=fopen(path,"w");
+*/	
+}
+
+
+/** 	\brief Check wether the ground node is covered by the uav
+ *		\param a pointer on the uav 
+ */
+bool inRange(aUav* uav, aNode* ground)
+{
+	return ( sqrt( pow2( uav->idx - ground->x ) + pow2( uav->y - ground->y ) ) > range ? false, true);
+};

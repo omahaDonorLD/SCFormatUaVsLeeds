@@ -1,6 +1,8 @@
 #!/usr/bin/python2.7
 x=[]
 y=[]
+numb_uavs=18
+radius=250
 with open('x_positions.txt') as f:
 	lines=f.readlines()
 	for line in lines :
@@ -23,6 +25,13 @@ for i in range(0,len(y)):
 	y[i]=float(y[i])
 
 with open('ref_pbrlm.csv', 'w') as f:
+	f.write(str(numb_uavs)+"\n")
+	for i in range(0,numb_uavs) :
+		if i==numb_uavs-1:
+			f.write(str(radius))
+		else :
+			f.write(str(radius)+" ")
+	f.write("\n")
 	f.write(str(len(y))+"\n")
 	for i in range(0,len(y)) :
 		f.write(str(x[i])+","+str(y[i])+"\n")

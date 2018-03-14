@@ -12,23 +12,13 @@
 #include <stdio.h>
 
 
-#include "../heads/individu.hpp"
 #include "../heads/output.hpp"
-#include "../heads/tools.hpp"
+#include "zitzler.c"
 
 #define ERROR(x)  fprintf(stderr, x), fprintf(stderr, "\n"), exit(1)
 
 using namespace std;
 
-
-
-/* Can be read in a param file */
-string inst_path = "../instances/instanceTest250.txt" ; 	// chemin d'accès au fichier problème par défaut
-string opt_path = "../optimum/optimum250.txt" ; 			// chemin d'accès à la réponse du problème par défaut
-bool removeclone = 1 ;		// 0 si on garde les clones, 1 sinon.
-bool parentarena = 1 ;		// 0 si on sélectionne les parents totalement aléatoirement, 1 sinon.
-bool gnuplot = 1 ;			// 0 si on supprime l'affiche, 1 sinon.
-bool results = 1 ;			// 0 si l'on ne veut pas les résultats, 1 sinon.
 
 
 /* Variables utilisées pour les calcules d'hypervolume */

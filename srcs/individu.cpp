@@ -1,89 +1,30 @@
 
 #include "../heads/individu.hpp"
+#include "kmeans.c"
 
 using namespace std;
 
-
-
-/**
- * \brief       Initialise une solution sans items sélectionnés
- *
- */
-Individu::Individu()
+// Creates randomly a solution
+sln* randomize()
 {
-	/* Initialisation des items à 0 */
-	for(int item = 0; item < nbr_uavs; ++item)
-	{
-		picked_objects.push_back(false);
-	}
-	/* Initialisation des objectifs à 0 */
-	for(int obj=0; obj<nbr_objs; ++obj)
-	{
-		current_objective_value.push_back(0);
-	}
-	/* Initialisation des contraintes à 0 */
-	for(int con=0; con<nbr_cnstrts; ++con)
-	{
-		current_constraint_value.push_back(0);
-	}
-
-	/* Initialisation des autres valeurs à 0 et/ou -1 */
-	rank = -1 ;
-	crowding_value = 0.0;
-	crowding_Total = 0.0;
-	isGRASP = 0 ;
+	sln rand_sln;
+	return rand_sln;
 }
 
 
-
-/**
- * \brief       Constructeur par copie à partir d'un pointeur
- *
- * \param    toCopy		Le pointeur vers l'individu à copier.
- */
-Individu::Individu(Individu *toCopy)
+// creates individuals using the clustering method kmeans to partition the ground nodes
+sln* clustering()
 {
-	/* Initialisation des valeurs non connu à 0 */
-	rank =-1;
-	crowding_value = 0.0;
-	crowding_Total = 0.0;
-	isGRASP = 0 ;
-
-
-	/* Copie des items */
-	for(int item = 0; item < nbr_uavs; ++item)
-	{
-		picked_objects.push_back(toCopy->picked_objects[item]);
-	}
-	/* Copie des objectifs */
-	for(int obj=0; obj<nbr_objs; ++obj)
-	{
-		current_objective_value.push_back(toCopy->current_objective_value[obj]);
-	}
-	/* Copie des contraintes */
-	for(int con=0; con<nbr_cnstrts; ++con)
-	{
-		current_constraint_value.push_back(toCopy->current_constraint_value[con]);
-	}
-
+	sln sln_kmeans;
 }
 
 
-
-Individu::~Individu()
+// creates individuals that are equally spread on the search space : Width/(2*radius-constant). With "cst" so that pairs of UaVs share a space equal to that constant (kind of ;) )
+sln* uniform()
 {
-
+	sln uniform_sln;
+	return uniform_sln;
 }
-
-
-
-/**
- *
- */
-bool inRange(aUav* uav, aNode ground)
-{
-	return ( sqrt( pow2( uav->idx - ground->x ) + pow2( uav->y - ground->y ) ) > range ? false, true);
-};
 
 
 /**

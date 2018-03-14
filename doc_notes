@@ -2,9 +2,16 @@ Questions to D G Reina :
 	- Which strategy for constructing first solution.
 	- using nsga2 to evaluate
 
+proposed improvement : build init solution feasible and fast. for comparisons use 2d scaterplot : x : number of ground nodes (unit of tens from 50 : 50,60,70,80,etc.), y : time
+	-> supposition : can heavily improve complexity in time (for cxity in #of ites, well, still a heuristic)
 
 k-means : - NP-Hard (optimum)
 	- heuristic : Lloyd's algorithm (and most variants) is O(nkdi) // d dimension, i number of iterations needed for convergence
+
+
+
+
+The problem is NP-HARD => set a limit of iterations for finding a feasible solution => default : use a heuristic for initial solution : start with a feasible but expensive solution (worst case : one uav by ground node. see performances of kmeans with radius really small : at most, less the distance between the two closest node in search space.)
 
 Grasp :
 
