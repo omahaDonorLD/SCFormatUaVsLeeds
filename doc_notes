@@ -1,9 +1,17 @@
+Links : https://pdfs.semanticscholar.org/41c6/ac5ab7f8c01f6a829e7e40ae3c320f8586ec.pdf
+	http://igraph.org/c/doc/igraph-Separators.html#igraph_minimum_size_separators
+	http://www2.imm.dtu.dk/courses/02735/sppintro.pdf
+	https://www.google.fr/search?client=ubuntu&channel=fs&q=clustering+operations+research&ie=utf-8&oe=utf-8&gfe_rd=cr&dcr=0&ei=5P6qWqfDEeGJ8QeMl7qoAw
+	http://www2.imm.dtu.dk/courses/02735/sp2.pdf
+	http://www2.imm.dtu.dk/courses/02735
+
 Questions to D G Reina :
 	- Which strategy for constructing first solution.
 	- using nsga2 to evaluate
 
 proposed improvement : build init solution feasible and fast. for comparisons use 2d scaterplot : x : number of ground nodes (unit of tens from 50 : 50,60,70,80,etc.), y : time
 	-> supposition : can heavily improve complexity in time (for cxity in #of ites, well, still a heuristic) (test code : 20 mins ???)
+	-> Methods : clustering (kmeans first)
 
 k-means : - NP-Hard (optimum)
 	- heuristic : Lloyd's algorithm (and most variants) is O(nkdi) // d dimension, i number of iterations needed for convergence
