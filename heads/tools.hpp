@@ -43,7 +43,7 @@ typedef struct aUav{
 	double range;  	// If "contains" < 0 then is ground node and its range is also < 1
 	bool active;  // ground nodes are always unactive. a uav can also be
 }aUav;
-*/
+
 
 
 /** Variables
@@ -57,8 +57,8 @@ int nbr_uavs;			// number of UaVs for an individ
 int max_uav_avail;		// the total number of uavs available
 int nbr_objs;			// 3 : CO, FTO, RO
 int nbr_constraints;	// connectivity cstraint, bounds
-int bound_1;			// Limits in 2D space : lower bound for all : 0
-int bound_2;
+double bound_1;			// Limits in 2D space : lower bound for all : 0
+double bound_2;
 int nbr_clones;			// nombre of clones to remove in one generation
 
 // stopping criteria and evolutionary parameters
@@ -85,7 +85,7 @@ bool gnuplot=1; // plot results
 bool results=1; // print results on terminal
 bool removeclone=1;	// 1, do not remove generated clones, 0 otherwise
 
-// Set of ground nodes 
+// Set of ground nodes
 aNode* GRNDS;		// All ground nodes coordinates
 double* UAVs_Range;	// all ranges of available uavs
 

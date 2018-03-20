@@ -35,26 +35,34 @@ typedef struct aUav{
 	bool active;  // ground nodes are always unactive. a uav can also be
 }aUav;
 
+
+typedef struct aNode_cluster{
+	aNode **C_l;// Worst case N clusters
+	aNode *rl;// "centroids"
+	int* counters;// number of element in each cluster
+	int K;// number of clusters
+}aNode_cluster;
+
 int max_uav_avail;
 int nbr_grnds;
 aNode* GRNDS;		// All ground nodes coordinates
 double* UAVs_Range;	// all ranges of available uavs
 
+
+// limit of map
+double bound_1;
+double bound_2;
+
 // Elbow method variables
-double elbow_param;	// heuristic for finding "k" needed 
+double elbow_param;	// heuristic for finding "k" needed
 //double **sim_mat;	// Euclidian
 
 // One pass method variables
-aNode **C_l;// Worst case N clusters
-aNode *rl;// "centroids"
-int* counters;
-int K=1;// Number of clusters
 
 
 void readData(char** argv);
 double euclDistance(aNode *uav1, aNode *uav2);
-void method1ePasse();
-
+aNode_cluster* method1ePasse(aNode* input_data, int* size_input, double *threshold);
 
 void readData(char** argv)
 {
@@ -67,10 +75,10 @@ void readData(char** argv)
 	fp=fopen(argv[1],"r");
 
 	// read number of available uavs
-	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}	
+	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 	UAVs_Range=(double*)malloc((max_uav_avail+1)*sizeof(double));
 	int i=0;
-	// read range of each of them 
+	// read range of each of them
 	for(i=1;i<=max_uav_avail;i++)
 		fscanf(fp,"%lf", &UAVs_Range[i]);
 
@@ -110,7 +118,7 @@ aNode newCentroid(aNode *Glm, int size)
 		rlm.y+=Glm[i].y;
 	}
 	rlm.x/=size;
-	rlm.y/=size;	
+	rlm.y/=size;
 
 
     return rlm;
@@ -118,71 +126,104 @@ aNode newCentroid(aNode *Glm, int size)
 
 
 
-void method1ePasse()
+aNode_cluster* method1ePasse(aNode* input_data, int* size_input, double *threshold)
 {
-	double threshold=250/2;// radius of range uav
-	C_l=(aNode**)malloc((nbr_grnds+1)*sizeof(aNode*));// Worst case N clusters
-	rl=(aNode*)malloc((nbr_grnds+1)*sizeof(aNode));// "centroids"
-	counters=(int*)malloc((nbr_grnds+1)*sizeof(int));
+	aNode** C_l=(aNode**)malloc((*size_input+1)*sizeof(aNode*));// Worst case N clusters
+	aNode* rl=(aNode*)malloc((*size_input+1)*sizeof(aNode));// "centroids"
+	int *counters=(int*)malloc((*size_input+1)*sizeof(int));
 	int k=2,j=1, index_closest_centroid=0;
 
-	for(k=0;k<=nbr_grnds;k++)
+	for(k=0;k<=*size_input;k++)
 	{
-		C_l[k]=(aNode*)malloc((nbr_grnds+1)*sizeof(aNode));// Allocate memory for clusters
+		C_l[k]=(aNode*)malloc((*size_input+1)*sizeof(aNode));// Allocate memory for clusters
 		counters[k]=0;
 	}
 
-	rl[1]=GRNDS[1];
+	rl[1]=input_data[1];
 	counters[1]++;
-	C_l[1][1]=GRNDS[1];
-	K=1;// Number of clusters
+	C_l[1][1]=input_data[1];
+	int K=1;// Number of clusters
 
-	double distance_to_closest_centroid=1000*1000;// Worst : the extrem limits of the whole map
-	double current_distance=1000;
+	double distance_to_closest_centroid=bound_1*bound_2;// Worst : the extrem limits of the whole map
+	double current_distance=0;
 
-	for(k=2;k<=nbr_grnds;k++)
+	for(k=2;k<=*size_input;k++)
 	{
-		distance_to_closest_centroid=1000*1000;// Worst :
-		index_closest_centroid=1;
+		distance_to_closest_centroid=bound_1*bound_2;// Worst :
+		index_closest_centroid=1;// Default
 		for(j=1;j<=K;j++)
 		{
-			current_distance=euclDistance(&GRNDS[k],&rl[j]);
+			current_distance=euclDistance(&input_data[k],&rl[j]);
 			if ( current_distance < distance_to_closest_centroid )
 			{
-				distance_to_closest_centroid=current_distance;// Worst
+				distance_to_closest_centroid=current_distance;// find the closest cluster
 				index_closest_centroid=j;
 			}
 		}
-		
 
-		if(distance_to_closest_centroid<threshold)
+
+		if(distance_to_closest_centroid<*threshold)
 		{
 			counters[index_closest_centroid]++;
-			C_l[index_closest_centroid][counters[index_closest_centroid]]=GRNDS[k];
+			C_l[index_closest_centroid][counters[index_closest_centroid]]=input_data[k];
 			rl[index_closest_centroid]=newCentroid(C_l[index_closest_centroid],counters[index_closest_centroid]);// overwrite previous centroid
 		}
 		else{
 			K++;
-			rl[K]=GRNDS[k];// overwrite previous centroid
+			rl[K]=input_data[k];// overwrite previous centroid
 			counters[K]++;// To [1]
-			C_l[K][1]=GRNDS[k];// C_l[K][counters[K]]
+			C_l[K][1]=input_data[k];// C_l[K][counters[K]]
 		}
 	}
 
+	// Write results
+	aNode_cluster *results=(aNode_cluster*)malloc(sizeof(aNode_cluster));
+	results->C_l=(aNode**)malloc((K+1)*sizeof(aNode*));// Worst case N clusters
+	results->rl=(aNode*)malloc((K+1)*sizeof(aNode));// "centroids"
+	results->counters=(int*)malloc((K+1)*sizeof(int));
+	results->K=K;
+	for(k=1;k<=K;k++)
+	{
+		results->C_l[k]=(aNode*)malloc((counters[k]+1)*sizeof(aNode));// Worst case N clusters
+		results->counters[k]=counters[k];
+		results->rl[k]=rl[k];
+		for(j=1;j<=counters[k];j++)
+				results->C_l[k][j]=C_l[k][j];
+	}
+
+	for(k=0;k<=*size_input;k++)	free(C_l[k]);
+	free(C_l);
+	free(rl);
+	free(counters);
+
+	return results;
 }
 
 int main(int argc, char** argv)
 {
 	readData(argv);
-	method1ePasse();
+
+	bound_1=1000;
+	bound_2=1000;
+
+	double threshold=250/2;
+
+	aNode_cluster *results=method1ePasse(GRNDS, &nbr_grnds, &threshold);
 
 	FILE* fp;
 	fp=fopen("rl.csv","w");
 	int i=0;
-	for(i=1;i<K;i++)
-		fprintf(fp,"%lf,%lf\n",rl[i].x,rl[i].y);
+	for(i=1;i<results->K;i++)
+		fprintf(fp,"%lf,%lf\n",results->rl[i].x,results->rl[i].y);
 	fclose(fp);
 
-	
+	threshold=250;
+	aNode_cluster *results2=method1ePasse(results->rl, &results->K, &threshold);
+
+	fp=fopen("rl2.csv","w");
+	for(i=1;i<results2->K;i++)
+		fprintf(fp,"%lf,%lf\n",results2->rl[i].x,results2->rl[i].y);
+	fclose(fp);
+
 	printf("%lf\n",GRNDS[17].x);
 }
