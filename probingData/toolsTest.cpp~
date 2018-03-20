@@ -1,0 +1,84 @@
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <string>
+#include <math.h>
+
+
+inline STREAM_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION) {printf("STREAM_FAILURE, line %d, function %s, file %s\n", LINE, IN_FUNCTION, THE_FILE);return EXIT_FAILURE};
+inline MEMO_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION) {printf("MEMO_ALLOC_FAILURE, line %d, function %s, file %s\n", LINE, IN_FUNCTION, THE_FILE);;return EXIT_FAILURE};
+
+
+/*** Structures
+ */
+// Each node have coordinates
+typedef struct aNode {
+	int index;// Unique, defines a point : for either a ground node or a uav
+	double x;
+	double y;
+}aNode;
+
+
+// A UaV is also a node
+// Even though igraph uses specific type, this structure that specifies the coordinates of a UaV in the netwprk
+typedef struct aUav{
+	aNode identif;
+	//long gene=0;
+	int covers;	// A UaV contains at least 0 ground nodes
+	double range;  	// If "contains" < 0 then is ground node and its range is also < 1
+	bool active;  // ground nodes are always unactive. a uav can also be
+}aUav;
+
+int max_uav_avail;
+int nbr_grnds;
+aNode* GRNDS;		// All ground nodes coordinates
+double* UAVs_Range;	// all ranges of available uavs
+double elbow_param;	// heuristic for finding "k" needed 
+double **sim_mat;	// Euclidian
+
+
+void readData(char** argv);
+void method1ePasse();
+
+void readData(char** argv)
+{
+	FILE* fp;h
+	char *tmp[100];// buffer
+	int tmp2;// this too
+
+
+	// read data (coordinates ground nodes)
+	fp=fopen(argv[1],"r");
+
+	// read number of available uavs
+	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}	
+	UAVs_Range=malloc(max_uav_avail*sizeof(double));
+	int i=0;
+	// read range of each of them 
+	for(i=0;i<max_uav_avail;i++)
+		fscanf(fp,"%lf", &UAVs_Range[i]);
+
+
+	// read number of ground nodes and then the coordinates
+	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
+
+	/* allocate memory for ground nodes */
+	GRNDS=malloc(nbr_grnds*sizeof(aNode));
+	if(GRNDS==NULL){ /* memory allocation failure */ MEMO_FAIL(__LINE__, __FILE__, __FUNCTION__); }
+
+	for(i=0;i<nbr_grnds;i++)
+	{
+		GRNDS[i].index=i;// Unique, defines a point : for either a ground node or a uav
+		fscanf(fp,"%lf,%lf", &GRNDS[i].x, &GRNDS[i].y);
+	}
+
+	fclose(fp);
+}
+
+
+int main(int argc, char** argv)
+{
+	readData(argv);
+	printf("%lf\n",GRNDS[17].x);
+}

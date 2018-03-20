@@ -2,6 +2,8 @@
 #define TOOLS_HPP
 
 
+#include <igraph.h>
+
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
@@ -13,8 +15,13 @@
 #include <math.h>
 
 
-inline STREAM_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION) {printf("STREAM_FAILURE, line %d, function %s, file %s\n", LINE, IN_FUNCTION, THE_FILE);return EXIT_FAILURE};
-inline MEMO_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION) {printf("MEMO_ALLOC_FAILURE, line %d, function %s, file %s\n", LINE, IN_FUNCTION, THE_FILE);;return EXIT_FAILURE};
+inline
+void STREAM_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION)
+{printf("STREAM_FAILURE, line %d, function %s, file %s\n", AT_LINE, IN_FUNCTION, FROM_FILE);return EXIT_FAILURE;};
+
+inline
+void MEMO_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION)
+{printf("MEMO_ALLOC_FAILURE, line %d, function %s, file %s\n", AT_LINE, IN_FUNCTION, FROM_FILE);return EXIT_FAILURE;};
 
 
 /*** Structures
@@ -26,15 +33,17 @@ typedef struct aNode {
 	double y;
 }aNode;
 
+
 // A UaV is also a node
+// Even though igraph uses specific type, this structure that specifies the coordinates of a UaV in the netwprk
 typedef struct aUav{
-	aNode id;
+	aNode identif;
 	//long gene=0;
 	int covers;	// A UaV contains at least 0 ground nodes
 	double range;  	// If "contains" < 0 then is ground node and its range is also < 1
-  bool active;  // ground nodes are always unactive. a uav can also be
+	bool active;  // ground nodes are always unactive. a uav can also be
 }aUav;
-
+*/
 
 
 /** Variables
@@ -88,6 +97,7 @@ double* UAVs_Range;	// all ranges of available uavs
 //aUav decodeGene(long* gene_indiv);
 
 bool readData(char** argv);
+double euclDistance(aNode *uav1, aNode *uav2);
 bool inRange(aUav* uav, aNode* ground);
 void writeData(sln* a_sln);
 void freeIndiv(Individu* indiv_to_copy);

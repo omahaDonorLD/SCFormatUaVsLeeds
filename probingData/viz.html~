@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+	font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+.dot {
+	stroke: #000;
+}
+
+</style>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script>
+
+// Set the dimensions of the canvas
+var margin = {top: 30, right: 20, bottom: 30, left: 50},
+	width = 700 - margin.left - margin.right,
+	height = 700 - margin.top - margin.bottom;
+
+// Set the ranges
+var weight = d3.scaleLinear().range([0, width]);
+var mpg = d3.scaleLinear().range([height, 0]);
+
+// Define the axes
+var xAxis = d3.axisBottom(weight);
+var yAxis = d3.axisLeft(mpg);
+
+// Shades of blues
+
+// Adds the svg canvas
+var svg = d3.select("body")
+	.append("svg")
+	.attr("width", width + margin.left + margin.right + 300)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform",
+	"translate(" + margin.left + "," + margin.top + ")");
+
+
+// Get the data
+d3.csv("coords.csv", function(error, data) {
+	if(error) throw error;
+
+	data.forEach(function(d) {
+		d.weight = +d.weight;
+		d.mpg = +d.mpg;
+	});
+
+	// Domains of the data (Fixed)
+	weight.domain([0, 1000]);
+	mpg.domain([0, 1000]);
+
+	// Labels for the axis
+	svg.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis)
+		.append("text")
+		.attr("class", "label")
+		.attr("x", width)
+		.attr("y", -6)
+		.style("text-anchor", "end")
+		.text("Weight");
+	svg.append("g")
+		.attr("class", "y axis")
+		.call(yAxis)
+		.append("text")
+		.attr("class", "label")
+		.attr("transform", "rotate(-90)")
+		.attr("y", 6)
+		.attr("dy", ".71em")
+		.style("text-anchor", "end")
+		.text("MPG")
+
+console.log(data)
+	// Draw points
+	svg.selectAll(".dot")
+		.data(data)
+		.enter().append("circle")
+		.attr("class", "dot")
+		.style("fill", "black")
+		.attr("transform", function(d) { return "translate(" + weight(d.weight) + "," + mpg(d.mpg) + ")"; });
+
+});
+
+</script>
+</body>
+</html>

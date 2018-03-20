@@ -10,12 +10,12 @@
 typedef struct Solution {
 		//long** gene;		// *to develop later if time* of size "nbr_uavs"*gene. Gene : sequence of 0 and 1 (int) for each UaV
 		int nbr_uavs;		// number of uavs in the solution
-		aUav* uavs;			// the uavs in the solution
+		aUav **uavs;		// the uavs in the solution
+		igraph_t *network;	// net of uavs, a graph of type "igraph_t" for checking FTO
 		int* ranks;			// ranks of each uav
 		double* profit;		// Fitness, based on 3 profit value : CO (Coverage), FTO (Fault tole), RO (Redund)
 							// last index is total on 3 objectives : profits[nbr_uavs]== Total of the solution
 		int* cnstrts_viol; 		// each constraint becomes 1 if violated (minimize). Only valid if sum(cnstrts)==0
-
 		// Necessary to NSGA-II
 		double crowding_value;				// crowding1 value
 		double crowding_Total;				// crowding2 value
@@ -59,9 +59,12 @@ bool dominates(Individu* indiv_1, Individu* indiv_2); // Does indiv 1 dominates 
 
 // Additional tool functions
 bool inRange(aUav* uav, aNode ground);
+bool isConnected(aUav* uav1, aUav uav2);// if distance(uav1,uav2) <= range(uav1)/2+range(uav2)/2 then can communicate
 sln* addUaV(sln sln_to_extend, aUav* uav_to_activate);
 sln* removeUaV(sln sln_to_extend, aUav* uav_to_deactivate);
 sln* copySln(sln* sln_to_copy);void freeSln(sln* sln_to_free);
+igraph_t* graphMatching(aUav** uavs);// Builds the graph matching the solution
+void freeNetwork(igraph_t* net);// Deallocate memory of network
 void free2D(double** to_free, int n_rows, int n_cols)
 
 #endif

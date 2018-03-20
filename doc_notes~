@@ -1,11 +1,12 @@
-Links : https://pdfs.semanticscholar.org/41c6/ac5ab7f8c01f6a829e7e40ae3c320f8586ec.pdf
-	http://igraph.org/c/doc/igraph-Separators.html#igraph_minimum_size_separators
-	http://www2.imm.dtu.dk/courses/02735/sppintro.pdf
-	https://www.google.fr/search?client=ubuntu&channel=fs&q=clustering+operations+research&ie=utf-8&oe=utf-8&gfe_rd=cr&dcr=0&ei=5P6qWqfDEeGJ8QeMl7qoAw
-	http://www2.imm.dtu.dk/courses/02735/sp2.pdf
+
+
+a given model : Uavs are nodes, links are when 2 nodes are connected. 
+Objective (among usuals) : CO, FTO (as starting, 2nd objective good that Evo algo (crossover of feasible random slns))
+	RO constraint : number of 
 
 Questions to D G Reina :
 	- Which strategy for constructing first solution.
+	- if redundancy on ground nodes, what about redondancy on uavs making the 
 	- using nsga2 to evaluate
 
 proposed improvement : build init solution feasible and fast. for comparisons use 2d scaterplot : x : number of ground nodes (unit of tens from 50 : 50,60,70,80,etc.), y : time
@@ -14,8 +15,6 @@ proposed improvement : build init solution feasible and fast. for comparisons us
 
 k-means : - NP-Hard (optimum)
 	- heuristic : Lloyd's algorithm (and most variants) is O(nkdi) // d dimension, i number of iterations needed for convergence
-
-
 
 
 The problem is NP-HARD => set a limit of iterations for finding a feasible solution => default : use a heuristic for initial solution : start with a feasible but expensive solution (worst case : one uav by ground node. see performances of kmeans with radius really small : at most, less the distance between the two closest node in search space.)
@@ -50,3 +49,19 @@ Mutation :
 	heuristic strategies (check best) : change coordinates of uav : 1) randomly, or 2) pick uav with lowest fitness and apply move wrt delta
 
 constraint (min) : 1 if violated. Since objective is to min, what if multiply obj*constrt ? Wrong : if obj==0 => obj*cnstrt==0. Not an option in our application, but still, easier to keep sum(cnstrts)==0.
+
+
+
+!!!!!! Essential for using igraph everywhere :
+	https://lists.nongnu.org/archive/html/igraph-help/2009-05/msg00072.html
+	http://igraph.wikidot.com/testing-environment-for-python-igraph
+
+Links : https://pdfs.semanticscholar.org/41c6/ac5ab7f8c01f6a829e7e40ae3c320f8586ec.pdf
+	http://igraph.org/c/doc/igraph-Separators.html#igraph_minimum_size_separators
+	http://www2.imm.dtu.dk/courses/02735/sppintro.pdf
+	https://www.google.fr/search?client=ubuntu&channel=fs&q=clustering+operations+research&ie=utf-8&oe=utf-8&gfe_rd=cr&dcr=0&ei=5P6qWqfDEeGJ8QeMl7qoAw
+	http://www2.imm.dtu.dk/courses/02735/sp2.pdf
+	http://www2.imm.dtu.dk/courses/02735
+	https://en.wikipedia.org/wiki/Minimax
+
+
