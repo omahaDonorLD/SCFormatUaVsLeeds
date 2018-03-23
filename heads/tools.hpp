@@ -24,25 +24,20 @@ void MEMO_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION)
 {printf("MEMO_ALLOC_FAILURE, line %d, function %s, file %s\n", AT_LINE, IN_FUNCTION, FROM_FILE);return EXIT_FAILURE;};
 
 
-/*** Structures
- */
-// Each node have coordinates
-typedef struct aNode {
-	int index;// Unique, defines a point : for either a ground node or a uav
-	double x;
-	double y;
-}aNode;
+
+typedef struct linklist
+{// Choice of LL : more dynamic size and easier to add/remove element at cheap cost both for memory and number of operations
+	int id;// index in array of UAVs/Ground nodes
+	struct linklist next;
+}linklist;// works for both uav and set of uavs and also for clustering step.
 
 
-// A UaV is also a node
-// Even though igraph uses specific type, this structure that specifies the coordinates of a UaV in the netwprk
-typedef struct aUav{
-	aNode identif;
-	//long gene=0;
-	int covers;	// A UaV contains at least 0 ground nodes
-	double range;  	// If "contains" < 0 then is ground node and its range is also < 1
-	bool active;  // ground nodes are always unactive. a uav can also be
-}aUav;
+typedef struct network{
+	linklist head;// index of ground nodes covered. Linked list since easier to add/remove element easily and keep track of the number of ground nodes within
+	int* counters;// number of elements in each cluster
+	bool uav;// Type of network : set of uavs (true) or ground nodes (false)
+	int size;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
+}net;
 
 
 
@@ -86,7 +81,7 @@ bool results=1; // print results on terminal
 bool removeclone=1;	// 1, do not remove generated clones, 0 otherwise
 
 // Set of ground nodes
-aNode* GRNDS;		// All ground nodes coordinates
+double** GRNDS;		// All ground nodes coordinates
 double* UAVs_Range;	// all ranges of available uavs
 
 /** Functions

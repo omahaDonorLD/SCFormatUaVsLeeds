@@ -17,23 +17,19 @@ int MEMO_FAIL(const char *FROM_FILE, int AT_LINE, const char *IN_FUNCTION)
 {printf("MEMO_ALLOC_FAILURE, line %d, function %s, file %s\n", AT_LINE, IN_FUNCTION, FROM_FILE);return EXIT_FAILURE;};
 
 
-// A UaV is also a node
-// Even though igraph uses specific type, this structure that specifies the coordinates of a UaV in the netwprk
-typedef struct aUav{
-	double *coords;
-	//long gene=0;
-	int *covers;	// Ground nodes uav covers
-	double range;  	// each uav has a range
-	bool active;  // ground nodes are always unactive. a uav can also be
-}aUav;
+typedef struct linklist
+{// Choice of LL : more dynamic size and easier to add/remove element at cheap cost both for memory and number of operations
+	int id;// index in array of UAVs/Ground nodes
+	struct linklist next;
+}linklist;// works for both uav and set of uavs and also for clustering step.
 
 
-typedef struct nodes_cluster{
-	int *labels;// For each given set of points respective clusters
-	double **rl;// "centroids"
+typedef struct network{
+	linklist head;// index of ground nodes covered. Linked list since easier to add/remove element easily and keep track of the number of ground nodes within
 	int* counters;// number of elements in each cluster
-	int K;// number of clusters
-}nodes_cluster;
+	bool uav;// Type of network : set of uavs (true) or ground nodes (false)
+	int size;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
+}net;
 
 
 int max_uav_avail;
@@ -230,7 +226,7 @@ nodes_cluster* k_means(double **data, int data_size, int K, double** rl, double 
     assert(data && K > 0 && K <= data_size && error_tolerance >= 0); /* for debugging */
 
     /* initialization : start with given centroids */
-     
+
      // c1 : temp centroids, res->rl : true centroids
 	for (i=0; i<=K; i++)
 	{
@@ -315,8 +311,8 @@ int main(int argc, char** argv)
 			else fprintf(fp,"%lf,", res->rl[i][j]);
 		}
 	fclose(fp);
-	
-	// 2nd tour with larger range : 
+
+	// 2nd tour with larger range :
 	threshold=250;
 	nodes_cluster *res2=method1ePasse(res->rl, res->K, threshold);
 
@@ -330,7 +326,7 @@ int main(int argc, char** argv)
 		}
 	fclose(fp);
 
-	// Using k means : 
+	// Using k means :
 	nodes_cluster *reskmeans=k_means(GRNDS, nbr_grnds, res->K, res->rl, 0.0001);
 
 	fp=fopen("rlkmeans.csv","w");
