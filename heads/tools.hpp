@@ -95,8 +95,13 @@ bool readData(char** argv);
 double euclDistance(aNode *uav1, aNode *uav2);
 bool inRange(aUav* uav, aNode* ground);
 void writeData(sln* a_sln);
+
+// Linked-list operations main reference : https://www.geeksforgeeks.org/data-structures/linked-list/
+
 void freeIndiv(Individu* indiv_to_copy);
-void free2D(double** to_free, int n_rows, int n_cols)
+void free2D(double** to_free, int n_rows, int n_cols);
+
+
 
 
 #endif

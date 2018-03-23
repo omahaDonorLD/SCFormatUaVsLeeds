@@ -20,12 +20,12 @@ int MEMO_FAIL(const char *FROM_FILE, int AT_LINE, const char *IN_FUNCTION)
 typedef struct linklist
 {// Choice of LL : more dynamic size and easier to add/remove element at cheap cost both for memory and number of operations
 	int id;// index in array of UAVs/Ground nodes
-	struct linklist next;
+	struct linklist *next;
 }linklist;// works for both uav and set of uavs and also for clustering step.
 
 
 typedef struct network{
-	linklist head;// index of ground nodes covered. Linked list since easier to add/remove element easily and keep track of the number of ground nodes within
+	linklist *head;// index of ground nodes covered. Linked list since easier to add/remove element easily and keep track of the number of ground nodes within
 	int* counters;// number of elements in each cluster
 	bool uav;// Type of network : set of uavs (true) or ground nodes (false)
 	int size;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
@@ -54,6 +54,9 @@ void readData(char** argv);
 double euclDistance(double *node1, double *node2);
 nodes_cluster* method1ePasse(double** input_data, int size_input, double threshold);
 nodes_cluster* k_means(double **data, int data_size, int K, double **rl, double error_tolerance);
+
+void addToLinkList(linklist** head, int new_index);
+void removeInLinkList(linklist** head, int del_index);
 
 void readData(char** argv)
 {
@@ -107,6 +110,47 @@ double euclDistance(double *node1, double *node2)
 }
 
 
+void addToLinkList(linklist** head, int new_index)
+{// Backward : new element added to the top
+	linklist* new_node=(linklist*) malloc(sizeof(linklist));
+	new_node->id=new_index;
+	new_node->next=*head;
+	*head=new_node;
+}
+
+
+void removeInLinkList(linklist** head, int del_index)
+{
+		linklist* temp = *head_ref;
+		linklist* prev;
+
+	 // If head node itself holds the key to be deleted
+	 if (temp != NULL && temp->id == del_index)
+	 {
+			 *head=temp->next;// Changed head
+			 free(temp);// free old head
+			 return;
+	 }
+
+	 // Search for the key to be deleted, keep track of the previous node since one needs to change 'prev->next'
+	 while (temp != NULL && temp->id != del_index)
+	 {
+			 prev = temp;
+			 temp = temp->next;
+	 }
+
+	 // If key not present in linked list
+	 if (temp == NULL)
+	 {
+		 printf("CAREFUL KEY MISSING : %s %s\n", __FUNCTION__, __LINE__);
+		 return;
+	 }
+
+	 // Unlink the node from linked list
+	 prev->next = temp->next;
+
+	 free(temp);  // Free memory
+}
 
 nodes_cluster* method1ePasse(double** input_data, int size_input, double threshold)
 {

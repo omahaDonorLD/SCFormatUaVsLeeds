@@ -58,10 +58,10 @@ void readData(char** argv)
 	fp=fopen(argv[2],"r");
 
 	// read number of available uavs
-	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}	
+	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 	UAVs_Range=malloc((max_uav_avail+1)*sizeof(double));
 	int i=0;
-	// read range of each of them 
+	// read range of each of them
 	for(i=1;i<=max_uav_avail;i++)
 		fscanf(fp,"%lf", &UAVs_Range[i]);
 
@@ -95,17 +95,20 @@ void writeData(sln a_sln){
 	strcat(path,strtok(NULL,"/"));
 
 	f=fopen(path,"w");
-*/	
+*/
 }
 
 
-double euclDistance(aNode *uav1, aNode *uav2)
+double euclDistance(double *node1, double *node2)
 {
-    return sqrt(pow(uav1->x-uav2->x,2)+pow(uav1->y-uav2->y,2));
+	int i=0;
+	double norm=0;
+	for(i=0;i<dim;i++)	norm+=pow(node1[i]-node2[i],2);
+    return sqrt(norm);
 }
 
 /** 	\brief Check wether the ground node is covered by the uav
- *		\param a pointer on the uav 
+ *		\param a pointer on the uav
  */
 bool inRange(aUav* uav, aNode* ground)
 {
