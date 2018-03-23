@@ -300,7 +300,7 @@ int main(int argc, char** argv)
 	bound_1=1000;
 	bound_2=1000;
 
-	double threshold=250/2;
+	double threshold=250/5;
 
 	nodes_cluster *res=method1ePasse(GRNDS, nbr_grnds, threshold);
 
