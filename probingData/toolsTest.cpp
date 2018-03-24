@@ -18,25 +18,29 @@ int MEMO_FAIL(const char *FROM_FILE, int AT_LINE, const char *IN_FUNCTION)
 
 
 typedef struct linklist
-{// Choice of LL : more dynamic size and easier to add/remove element at cheap cost both for memory and number of operations
+{// Choice of LL for ground nodes : more dynamic size and easier to add/remove element at cheap cost both for memory and number of operations
 	int id;// index in array of UAVs/Ground nodes
 	struct linklist *next;
 }linklist;// works for both uav and set of uavs and also for clustering step.
 
 
 typedef struct network{
-	linklist *head;// index of ground nodes covered. Linked list since easier to add/remove element easily and keep track of the number of ground nodes within
-	int* counters;// number of elements in each cluster
-	bool uav;// Type of network : set of uavs (true) or ground nodes (false)
-	int size;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
-}net;
+	linklist **contains;/* List of n_uavs pointers, each pointing to the head of the linkedlist of indices of ground nodes it covers.
+								Linked list since easier to add/remove ground nodes easily and
+								keep track of the number of ground nodes within */
+	int* uav_indices;/* matching "contains" list with "uavs_indices". The latter contains the indices 'i'
+							of elements in list "uavs" so that one can finds the coordinates of uavs[i] */
+	int* counters;// number of elements (size : n_uavs) covered by the uav
+	int n_uavs;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
+}network;
 
 
 int max_uav_avail;
 int nbr_grnds;
 int dim=2;			// dimension of input vectors
-double** GRNDS;		// All ground nodes coordinates
-double* UAVs_Range;	// all ranges of available uavs
+double** grnds;		// All ground nodes coordinates
+double** uavs;		// All available uavs : for uavs init to (-1,-1) => not used
+double* uavs_range;	// all ranges of available uavs
 
 
 // limit of map
@@ -52,8 +56,10 @@ double elbow_param;	// heuristic for finding "k" needed
 
 void readData(char** argv);
 double euclDistance(double *node1, double *node2);
-nodes_cluster* method1ePasse(double** input_data, int size_input, double threshold);
-nodes_cluster* k_means(double **data, int data_size, int K, double **rl, double error_tolerance);
+network* method1ePasse(double** input_data, int size_input, double threshold);
+/*"network", contains all needed info : number of uavs, coords of uavs (through "uav_indices" containing
+	indices with which one can find the coordinates of uavs) inked list contains the centroids*/
+network* k_means(double **data, int data_size, int K, network *a_net, double error_tolerance);
 
 void addToLinkList(linklist** head, int new_index);
 void removeInLinkList(linklist** head, int del_index);
@@ -70,29 +76,34 @@ void readData(char** argv)
 
 	// read number of available uavs
 	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
-	UAVs_Range=(double*)malloc((max_uav_avail+1)*sizeof(double));
+	uavs_range=(double*)malloc((max_uav_avail+1)*sizeof(double));
+	uavs=(double**)malloc((max_uav_avail+1)*sizeof(double*));
 
 	int i=0, j=0;
 	// read range of each of them
-	for(i=1;i<=max_uav_avail;i++)
-		fscanf(fp,"%lf", &UAVs_Range[i]);
+	for(i=0;i<=max_uav_avail;i++)
+	{
+		uavs[i]=(double*)malloc(dim*sizeof(double))
+		for(j=0;j<dim;j++)	uavs[i][j]=-1;
+		fscanf(fp,"%lf", &uavs_range[i]);
+	}
 
 
 	// read number of ground nodes and then the coordinates
 	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	/* allocate memory for ground nodes */
-	GRNDS=(double**)malloc((nbr_grnds+1)*sizeof(double*));
-	if(GRNDS==NULL){ /* memory allocation failure */ MEMO_FAIL(__FILE__, __LINE__, __FUNCTION__); }
+	grnds=(double**)malloc((nbr_grnds+1)*sizeof(double*));
+	if(grnds==NULL){ /* memory allocation failure */ MEMO_FAIL(__FILE__, __LINE__, __FUNCTION__); }
 
 	for(i=1;i<=nbr_grnds;i++)
 	{
-		GRNDS[i]=(double*)calloc(dim,sizeof(double));// Unique, defines a point : for either a ground node or a uav
+		grnds[i]=(double*)calloc(dim,sizeof(double));// Unique, defines a point : for either a ground node or a uav
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim
-			if(j==dim-1)	fscanf(fp,"%lf", &GRNDS[i][j]);
-			else fscanf(fp,"%lf,", &GRNDS[i][j]);
+			if(j==dim-1)	fscanf(fp,"%lf", &grnds[i][j]);
+			else fscanf(fp,"%lf,", &grnds[i][j]);
 		}
 	}
 
@@ -121,23 +132,23 @@ void addToLinkList(linklist** head, int new_index)
 
 void removeInLinkList(linklist** head, int del_index)
 {
-		linklist* temp = *head_ref;
-		linklist* prev;
+	linklist* temp = *head_ref;
+	linklist* prev;
 
-	 // If head node itself holds the key to be deleted
-	 if (temp != NULL && temp->id == del_index)
-	 {
-			 *head=temp->next;// Changed head
-			 free(temp);// free old head
-			 return;
-	 }
+	// If head node itself holds the key to be deleted
+	if (temp != NULL && temp->id == del_index)
+	{
+		*head=temp->next;// Changed head
+		free(temp);// free old head
+		return;
+	}
 
-	 // Search for the key to be deleted, keep track of the previous node since one needs to change 'prev->next'
-	 while (temp != NULL && temp->id != del_index)
-	 {
-			 prev = temp;
-			 temp = temp->next;
-	 }
+	// Search for the key to be deleted, keep track of the previous node since one needs to change 'prev->next'
+	while (temp != NULL && temp->id != del_index)
+	{
+		prev = temp;
+		temp = temp->next;
+	}
 
 	 // If key not present in linked list
 	 if (temp == NULL)
@@ -152,13 +163,12 @@ void removeInLinkList(linklist** head, int del_index)
 	 free(temp);  // Free memory
 }
 
-nodes_cluster* method1ePasse(double** input_data, int size_input, double threshold)
+network* method1ePasse(double** input_data, int size_input, double threshold)
 {
 	/* temporary variables, used since K isn't known yet (At first K is the whole size_input), freed later */
-	int* labels=(int*)calloc((size_input+1),sizeof(int));
+	int* labels=(int*)calloc((size_input+1),sizeof(int));// to find quicker which cluster each element belongs to
 	double** rl=(double**)malloc((size_input+1)*sizeof(double*));// "centroids"
 	double** cl=(double**)malloc((size_input+1)*sizeof(double*));// contains the sum (on each dimension) of elements in specific cluster
-	int *counters=(int*)calloc((size_input+1),sizeof(int));// counter of nombre of elements in each cluster
 	int k=2,j=1;
 
 
@@ -342,7 +352,7 @@ int main(int argc, char** argv)
 
 	double threshold=250/5;
 
-	nodes_cluster *res=method1ePasse(GRNDS, nbr_grnds, threshold);
+	nodes_cluster *res=method1ePasse(grnds, nbr_grnds, threshold);
 
 	FILE* fp;
 	fp=fopen("rl.csv","w");
@@ -371,7 +381,7 @@ int main(int argc, char** argv)
 	fclose(fp);
 
 	// Using k means :
-	nodes_cluster *reskmeans=k_means(GRNDS, nbr_grnds, res->K, res->rl, 0.0001);
+	nodes_cluster *reskmeans=k_means(grnds, nbr_grnds, res->K, res->rl, 0.0001);
 
 	fp=fopen("rlkmeans.csv","w");
 	for(i=1;i<reskmeans->K;i++)
@@ -383,5 +393,5 @@ int main(int argc, char** argv)
 		}
 	fclose(fp);
 
-	printf("%lf\n",GRNDS[17][0]);
+	printf("%lf\n",grnds[17][0]);
 }
