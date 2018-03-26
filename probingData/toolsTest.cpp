@@ -24,22 +24,24 @@ typedef struct linklist
 }linklist;// works for both uav and set of uavs and also for clustering step.
 
 
-typedef struct network{
-	linklist **contains;/* List of n_uavs pointers, each pointing to the head of the linkedlist of indices of ground nodes it covers.
+typedef struct sln{
+	int* labels;// Size : the total number of elements (ground nodes), stores for each element the cluster it belongs to. Safety as also have info into "covers".
+/*	linklist **covers;/* List of n_uavs pointers, each pointing to the head of the linkedlist of indices of ground nodes it covers.
 								Linked list since easier to add/remove ground nodes easily and
 								keep track of the number of ground nodes within */
-	int* uav_indices;/* matching "contains" list with "uavs_indices". The latter contains the indices 'i'
+	double** uavs;/* matching "contains" list with "uavs_indices". The latter contains the indices 'i'
 							of elements in list "uavs" so that one can finds the coordinates of uavs[i] */
 	int* counters;// number of elements (size : n_uavs) covered by the uav
 	int n_uavs;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
-}network;
+}sln;
 
 
 int max_uav_avail;
 int nbr_grnds;
 int dim=2;			// dimension of input vectors
 double** grnds;		// All ground nodes coordinates
-double** uavs;		// All available uavs : for uavs init to (-1,-1) => not used
+// Solution above (A unique list of uavs) not relevant as possible to have many solutions at a time
+//double** uavs;		// All available uavs : for uavs init to (-1,-1) => not used
 double* uavs_range;	// all ranges of available uavs
 
 
@@ -56,10 +58,8 @@ double elbow_param;	// heuristic for finding "k" needed
 
 void readData(char** argv);
 double euclDistance(double *node1, double *node2);
-network* method1ePasse(double** input_data, int size_input, double threshold);
-/*"network", contains all needed info : number of uavs, coords of uavs (through "uav_indices" containing
-	indices with which one can find the coordinates of uavs) inked list contains the centroids*/
-network* k_means(double **data, int data_size, int K, network *a_net, double error_tolerance);
+sln* method1ePasse(double** input_data, int size_input, double threshold);
+void k_means(double** data, int n, sln* clusters, double error_tolerance);
 
 void addToLinkList(linklist** head, int new_index);
 void removeInLinkList(linklist** head, int del_index);
@@ -77,16 +77,11 @@ void readData(char** argv)
 	// read number of available uavs
 	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 	uavs_range=(double*)malloc((max_uav_avail+1)*sizeof(double));
-	uavs=(double**)malloc((max_uav_avail+1)*sizeof(double*));
 
 	int i=0, j=0;
 	// read range of each of them
-	for(i=0;i<=max_uav_avail;i++)
-	{
-		uavs[i]=(double*)malloc(dim*sizeof(double))
-		for(j=0;j<dim;j++)	uavs[i][j]=-1;
+	for(i=1;i<=max_uav_avail;i++)
 		fscanf(fp,"%lf", &uavs_range[i]);
-	}
 
 
 	// read number of ground nodes and then the coordinates
@@ -132,7 +127,7 @@ void addToLinkList(linklist** head, int new_index)
 
 void removeInLinkList(linklist** head, int del_index)
 {
-	linklist* temp = *head_ref;
+	linklist* temp = *head;
 	linklist* prev;
 
 	// If head node itself holds the key to be deleted
@@ -153,7 +148,7 @@ void removeInLinkList(linklist** head, int del_index)
 	 // If key not present in linked list
 	 if (temp == NULL)
 	 {
-		 printf("CAREFUL KEY MISSING : %s %s\n", __FUNCTION__, __LINE__);
+		 printf("CAREFUL KEY MISSING : %s %d\n", __FUNCTION__, __LINE__);
 		 return;
 	 }
 
@@ -163,14 +158,17 @@ void removeInLinkList(linklist** head, int del_index)
 	 free(temp);  // Free memory
 }
 
-network* method1ePasse(double** input_data, int size_input, double threshold)
+sln* method1ePasse(double** input_data, int size_input, double threshold)
 {
-	/* temporary variables, used since K isn't known yet (At first K is the whole size_input), freed later */
-	int* labels=(int*)calloc((size_input+1),sizeof(int));// to find quicker which cluster each element belongs to
-	double** rl=(double**)malloc((size_input+1)*sizeof(double*));// "centroids"
-	double** cl=(double**)malloc((size_input+1)*sizeof(double*));// contains the sum (on each dimension) of elements in specific cluster
+	sln* res=(sln*)malloc(sizeof(sln));
+	res->labels=(int*)calloc((size_input+1),sizeof(int));
 	int k=2,j=1;
 
+	/* temporary variables, used since K isn't known yet (At first K is the whole size_input), freed later */
+	// Doesn't need a buffer since also needed by global solution
+	int *counters=(int*)calloc((size_input+1),sizeof(int));// to quicker find which cluster each element belongs to
+	double** rl=(double**)malloc((size_input+1)*sizeof(double*));// temporary "centroids" (Temporary as don't know how many K needed yet.)
+	double** cl=(double**)malloc((size_input+1)*sizeof(double*));// Needed for "rl", contains the sum (on each dimension) of elements in specific cluster
 
 	/* Initialisation steps */
 	for(k=0;k<=size_input;k++)
@@ -187,9 +185,9 @@ network* method1ePasse(double** input_data, int size_input, double threshold)
 	}
 
 	counters[1]++;
-	labels[1]=1;// first element assigned to first cluster
+	res->labels[1]=1;// label of first element : first cluster
 
-	int K=1;// Number of clusters
+	int K=1;// Number of clusters so far
 
 	double distance_to_closest_centroid=bound_1*bound_2;// Worst : the extrem limits of the entire map
 	double current_distance=0;
@@ -204,48 +202,46 @@ network* method1ePasse(double** input_data, int size_input, double threshold)
 			if ( current_distance < distance_to_closest_centroid )
 			{
 				distance_to_closest_centroid=current_distance;// find the closest cluster
-				labels[k]=j;
+				res->labels[k]=j;
 			}
 		}
 
 
 		if(distance_to_closest_centroid<threshold)
 		{// closest centroid is within admissible range => add element to cluster
-			counters[labels[k]]++;
+			counters[res->labels[k]]++;
 			/* update centroids */
 			for(j=0;j<dim;j++)
 			{
-				cl[labels[k]][j]+=input_data[k][j];
-				rl[labels[k]][j]=cl[labels[k]][j]/counters[labels[k]];
+				cl[res->labels[k]][j]+=input_data[k][j];
+				rl[res->labels[k]][j]=cl[res->labels[k]][j]/counters[res->labels[k]];
 			}
 		}
 		else
-		{// closest centroid IS NOT within admissible range => Create own new cluster
+		{// closest centroid is not within admissible range => Create own new cluster
 			K++;
-			labels[k]=K;
+			res->labels[k]=K;
 			for(j=0;j<dim;j++)
 			{
-				cl[labels[k]][j]=input_data[k][j];
-				rl[labels[k]][j]=cl[labels[k]][j];
+				cl[res->labels[k]][j]=input_data[k][j];
+				rl[res->labels[k]][j]=input_data[k][j];
 			}
 			counters[K]++;// To [1]
 		}
 	}
 
-	/* Write results now that all K clusters are obtained */
-	nodes_cluster *results=(nodes_cluster*)malloc(sizeof(nodes_cluster));
-	results->labels=(int*)calloc((size_input+1),sizeof(int));
-	results->rl=(double**)malloc((K+1)*sizeof(double*));
-	results->counters=(int*)calloc((K+1),sizeof(int));
-	results->K=K;
-
-	for(k=1;k<=size_input;k++)	results->labels[k]=labels[k];
-
-	for(k=0;k<=K;k++)
+	/* Write results now that all K clusters are built */
+	res->n_uavs=K;
+//	res->covers=(linklist**)malloc((K+1)*sizeof(linklist*));
+	res->uavs=(double**)malloc((K+1)*sizeof(double*));
+	res->counters=(int*)calloc((K+1),sizeof(int));
+	for(k=1;k<=K;k++)
 	{
-		results->rl[k]=(double*)calloc(dim,sizeof(double));
-		results->counters[k]=counters[k];
-		for(j=0;j<dim;j++)	results->rl[k][j]=rl[k][j];
+		res->counters[k]=counters[k];
+		res->uavs[k]=(double*)calloc(dim,sizeof(double));
+//		for(j=1;j<=res->counters[k];j++)
+//			addToLinkList(&res->covers[k], elts[k][counters[k]]);
+		for(j=0;j<dim;j++)	res->uavs[k][j]=rl[k][j];
 	}
 
 	/* Housekeeping */
@@ -255,40 +251,28 @@ network* method1ePasse(double** input_data, int size_input, double threshold)
 		free(rl[k]);
 	}
 	free(cl);
-	free(labels);
 	free(rl);
 	free(counters);
 
-	return results;
+	return res;
 }
 
 
-nodes_cluster* k_means(double **data, int data_size, int K, double** rl, double error_tolerance)
+void k_means(double** data, int n, sln* clusts, double error_tolerance)
 {
 
     int h, i, j; /* loop counters, of course :) */
 
-	nodes_cluster *res=(nodes_cluster*)malloc(sizeof(nodes_cluster));
-	res->labels=(int*)calloc((data_size+1),sizeof(int));
-	res->rl=(double**)malloc((K+1)*sizeof(double*));
-	res->counters=(int*)calloc((K+1),sizeof(int));
-	res->K=K;
-
     double old_error, error = DBL_MAX; /* sum of squared euclidean distance. DBL_MAX : macro defines the maximum finite floating-point value : 1E+37*/
-    double** c1=(double**) malloc((K+1)*sizeof(double*)); /* temp centroids */
+    double** c1=(double**) malloc((clusts->n_uavs+1)*sizeof(double*)); /* temp centroids */
 
-    assert(data && K > 0 && K <= data_size && error_tolerance >= 0); /* for debugging */
+    assert(data && clusts->n_uavs > 0 && clusts->n_uavs <= n && error_tolerance >= 0); /* for debugging */
 
     /* initialization : start with given centroids */
 
-     // c1 : temp centroids, res->rl : true centroids
-	for (i=0; i<=K; i++)
-	{
-		res->rl[i]=(double*)calloc(dim, sizeof(double));
+     // c1 : temp centroids, clusts->uavs : true centroids
+	for (i=0; i<=clusts->n_uavs; i++)
 		c1[i]=(double*)calloc(dim, sizeof(double));
-		/* seed with provided centroids */
-		for(j=0;j<dim;j++)	res->rl[i][j] = rl[i][j];
-	}
 
 	double min_distance = DBL_MAX, distance = 0;
 
@@ -299,47 +283,66 @@ nodes_cluster* k_means(double **data, int data_size, int K, double** rl, double 
         error = 0;
 
         /* clear old counts and temp centroids */
-        for (i=1; i <=K; res->counters[i++] = 0)
+        for (i=1; i <=clusts->n_uavs; clusts->counters[i++] = 0)
         {
 			// reinit temp centroids
             for (j=0;j<dim;c1[i][j++] = 0);
         }
 
-        for (h = 1; h <= data_size; h++)
+        for (h = 1; h <= n; h++)
         {
             /* Find closest cluster */
             min_distance = DBL_MAX;
-            for (i=1; i<=K; i++)
+            for (i=1; i<=clusts->n_uavs; i++)
             {
 				distance=0;
 				/* considered distance : euclidian squared or squared residuals */
-                for(j=0;j<dim;j++)	distance+=pow(data[h][j]-rl[i][j],2);
+                for(j=0;j<dim;j++)	distance+=pow(data[h][j]-clusts->uavs[i][j],2);
                 if (distance < min_distance)
                 {
 					min_distance=distance;// find the closest cluster
-                    res->labels[h] = i;
+                    clusts->labels[h] = i;
                 }
             }
             /* update size and temp centroid of the destination cluster */
-			for(j=0;j<dim;j++)	c1[res->labels[h]][j] += data[h][j];
-			res->counters[res->labels[h]]++;
+			for(j=0;j<dim;j++)	c1[clusts->labels[h]][j] += data[h][j];
+			clusts->counters[clusts->labels[h]]++;
             /* update standard error */
             error += min_distance;
         }
 
 		/* update all centroids */
-        for (i=1; i<=K; i++)
+        for (i=1; i<=clusts->n_uavs; i++)
             for (j=0; j<dim; j++)
-                res->rl[i][j] = res->counters[i] ? c1[i][j]/res->counters[i] : c1[i][j];
+                clusts->uavs[i][j] = clusts->counters[i] ? c1[i][j]/clusts->counters[i] : c1[i][j];
 
     } while (fabs(error - old_error) > error_tolerance);/* if for each iteration, the number of changes made are not different from previous */
 
 
+	// rebuild the variables 
+	// first free previous
+/*
+	linklist* ite;
+	linklist* tmp;
+	for(i=0;i<=n;i++)
+	{
+		ite=clusts->covers[i];
+		while (ite != NULL)
+		{
+			tmp=ite;
+			ite=ite->next;
+			free(tmp);
+		}
+		clusts->covers[i]=NULL;
+		addToLinkList(&clusts->covers[i], i);
+
+	}
+*/
+
 	/* housekeeping */
-	for(h=0;h<=K;h++)	free(c1[h]);
+	for(h=0;h<=clusts->n_uavs;h++)	free(c1[h]);
 	free(c1);
 
-    return res;
 }
 
 
@@ -350,46 +353,46 @@ int main(int argc, char** argv)
 	bound_1=1000;
 	bound_2=1000;
 
-	double threshold=250/5;
+	double threshold=250;
 
-	nodes_cluster *res=method1ePasse(grnds, nbr_grnds, threshold);
+	sln *res=method1ePasse(grnds, nbr_grnds, threshold);
 
 	FILE* fp;
 	fp=fopen("rl.csv","w");
 	int i=0,j=0;
-	for(i=1;i<res->K;i++)
+	for(i=1;i<res->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim
-			if(j==dim-1)	fprintf(fp,"%lf\n", res->rl[i][j]);
-			else fprintf(fp,"%lf,", res->rl[i][j]);
+			if(j==dim-1)	fprintf(fp,"%lf\n", res->uavs[i][j]);
+			else fprintf(fp,"%lf,", res->uavs[i][j]);
 		}
 	fclose(fp);
 
 	// 2nd tour with larger range :
 	threshold=250;
-	nodes_cluster *res2=method1ePasse(res->rl, res->K, threshold);
+	sln *res2=method1ePasse(res->uavs, res->n_uavs, threshold);
 
 	fp=fopen("rl2.csv","w");
-	for(i=1;i<res2->K;i++)
+	for(i=1;i<res2->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim
-			if(j==dim-1)	fprintf(fp,"%lf\n", res2->rl[i][j]);
-			else fprintf(fp,"%lf,", res2->rl[i][j]);
+			if(j==dim-1)	fprintf(fp,"%lf\n", res2->uavs[i][j]);
+			else fprintf(fp,"%lf,", res2->uavs[i][j]);
 		}
 	fclose(fp);
 
 	// Using k means :
-	nodes_cluster *reskmeans=k_means(grnds, nbr_grnds, res->K, res->rl, 0.0001);
+	k_means(grnds, nbr_grnds, res, 0.0001);
 
 	fp=fopen("rlkmeans.csv","w");
-	for(i=1;i<reskmeans->K;i++)
+	for(i=1;i<res->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim
-			if(j==dim-1)	fprintf(fp,"%lf\n", reskmeans->rl[i][j]);
-			else fprintf(fp,"%lf,", reskmeans->rl[i][j]);
+			if(j==dim-1)	fprintf(fp,"%lf\n", res->uavs[i][j]);
+			else fprintf(fp,"%lf,", res->uavs[i][j]);
 		}
 	fclose(fp);
 
