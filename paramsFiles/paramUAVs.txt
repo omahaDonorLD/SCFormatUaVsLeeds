@@ -1,5 +1,6 @@
 PROBLEM_CRITERIA
-opt_path= optimumCOV/optimum50.csv
+inst_path= instancesKP/instanceTest50.txt
+opt_path= optimum/optimum50.txt
 PopSize= 10
 mutaprob= 0.1
 rank1maxsize= 0.2

@@ -1,8 +1,8 @@
-2 objectives : (1) min #of uavs, (2) max fto. cstrts : all elements covered by at least 2 uavs, connectivity constraint
 
-https://www.youtube.com/watch?v=mthPiiCS24A&feature=youtu.be
-https://www.youtube.com/watch?v=jQPb7DRMoZY
-https://www.youtube.com/watch?v=TTFoJQSd48c
+step : build function translating network into graph, 
+
+2 objectives : (1) min #of uavs, (2) max fto. cstrts : all elements covered by at least 2 uavs, connectivity constraint
+check if which politic to use to build multiple initial solutions (different size of K, change threshold for onePassMethod ?...)
 
 
 why linklist : size arrays fixed, Inserting a new element in array is expensive, since room has to be created and for this existing elements have to be shifted.

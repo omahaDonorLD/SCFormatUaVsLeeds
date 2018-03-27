@@ -25,7 +25,7 @@ typedef struct Solution {
 
 /** Variables
  */
-sln** RCList;			// RCList corresponfing to GRASPFIT and alphas
+sln** RCList;			// RCList corresponfing to graspfit and alphas
 
 
 /** Functions
@@ -37,7 +37,7 @@ void updateFitness(sln* aSolution, int uav_updated);// computes and assign the f
 bool isFeasible(sln* aSolution);			// check if solution is feasible
 void makeFeasible(sln* aSolution);			// fix the violated constraints of the solution
 void makeConnected(sln* aSolution);		// fix the connectivity constraint of the solution
-void coverAllGrnds(sln* aSolution);		// covers all the grounds with the minimum number of uavs
+void coverAllgrnds(sln* aSolution);		// covers all the grounds with the minimum number of uavs
 
 //sln* closestIndiv(aNode* an_indiv, double radius);		// Part of making the covering constraint satisfiable. Finds the closest individuals close to a given one (picked randomly) and with respect to a given radius.
 
@@ -49,7 +49,7 @@ sln* uniform();	// creates individuals that are equally spread on the search spa
 // evolutionary operations
 void mutate(sln* an_indiv, int index_uav, double delta);	// move uav in solution wrt delta mutating an individual from 1 to 0
 sln* cross(Individu* indiv_1, Individu* indiv_2);	// cross-over only creates 1 child
-sln* createGRASPFIT(double* Coef, double alpha);	// Creates GRASPFIT and RCList from direction Coefficients and alphas
+sln* creategraspfit(double* Coef, double alpha);	// Creates graspfit and RCList from direction Coefficients and alphas
 sln* GRASP( double alpha);			// create GRASP individual with tradeoff greedy-random depending on the coefficient "alpha"
 
 
@@ -57,14 +57,6 @@ sln* GRASP( double alpha);			// create GRASP individual with tradeoff greedy-ran
 bool dominates(Individu* indiv_1, Individu* indiv_2); // Does indiv 1 dominates indiv 2
 
 
-// Additional tool functions
-bool inRange(aUav* uav, aNode ground);
-bool isConnected(aUav* uav1, aUav uav2);// if distance(uav1,uav2) <= range(uav1)/2+range(uav2)/2 then can communicate
-sln* addUaV(sln sln_to_extend, aUav* uav_to_activate);
-sln* removeUaV(sln sln_to_extend, aUav* uav_to_deactivate);
-sln* copySln(sln* sln_to_copy);void freeSln(sln* sln_to_free);
-igraph_t* graphMatching(aUav** uavs);// Builds the graph matching the solution
-void freeNetwork(igraph_t* net);// Deallocate memory of network
-void free2D(double** to_free, int n_rows, int n_cols)
+//void free2D(double** to_free, int n_rows, int n_cols)
 
 #endif

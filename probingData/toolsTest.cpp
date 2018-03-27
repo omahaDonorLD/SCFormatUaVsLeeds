@@ -16,13 +16,13 @@ inline
 int MEMO_FAIL(const char *FROM_FILE, int AT_LINE, const char *IN_FUNCTION)
 {printf("MEMO_ALLOC_FAILURE, line %d, function %s, file %s\n", AT_LINE, IN_FUNCTION, FROM_FILE);return EXIT_FAILURE;};
 
-
+/* Not needed, labels contained in struct solution for each gromax_uav_availund node
 typedef struct linklist
 {// Choice of LL for ground nodes : more dynamic size and easier to add/remove element at cheap cost both for memory and number of operations
 	int id;// index in array of UAVs/Ground nodes
 	struct linklist *next;
 }linklist;// works for both uav and set of uavs and also for clustering step.
-
+*/
 
 typedef struct sln{
 	int* labels;// Size : the total number of elements (ground nodes), stores for each element the cluster it belongs to. Safety as also have info into "covers".
@@ -36,13 +36,14 @@ typedef struct sln{
 }sln;
 
 
-int max_uav_avail;
+int max_uavs_avail;
 int nbr_grnds;
 int dim=2;			// dimension of input vectors
 double** grnds;		// All ground nodes coordinates
 // Solution above (A unique list of uavs) not relevant as possible to have many solutions at a time
 //double** uavs;		// All available uavs : for uavs init to (-1,-1) => not used
-double* uavs_range;	// all ranges of available uavs
+//double* uavs_ranges;	// all ranges of available uavs
+double uavs_range;	// all ranges of available uavs
 
 
 // limit of map
@@ -60,9 +61,10 @@ void readData(char** argv);
 double euclDistance(double *node1, double *node2);
 sln* method1ePasse(double** input_data, int size_input, double threshold);
 void k_means(double** data, int n, sln* clusters, double error_tolerance);
+igraph_t* translate(sln* net);
 
-void addToLinkList(linklist** head, int new_index);
-void removeInLinkList(linklist** head, int del_index);
+//void addToLinkList(linklist** head, int new_index);
+//void removeInLinkList(linklist** head, int del_index);
 
 void readData(char** argv)
 {
@@ -75,16 +77,20 @@ void readData(char** argv)
 	fp=fopen(argv[1],"r");
 
 	// read number of available uavs
-	if( fscanf(fp,"%d", &max_uav_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
-	uavs_range=(double*)malloc((max_uav_avail+1)*sizeof(double));
+	if( fscanf(fp,"%d", &max_uavs_avail) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
+//	uavs_ranges=(double*)malloc((max_uavs_avail+1)*sizeof(double));
+
+	// read range of uavs
+	if( fscanf(fp,"%lf", &uavs_range) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	int i=0, j=0;
+/*
 	// read range of each of them
-	for(i=1;i<=max_uav_avail;i++)
-		fscanf(fp,"%lf", &uavs_range[i]);
+	for(i=1;i<=max_uavs_avail;i++)
+		fscanf(fp,"%lf", &uavs_ranges[i]);
+*/
 
-
-	// read number of ground nodes and then the coordinates
+	// read number of ground nodes and their coordinates
 	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	/* allocate memory for ground nodes */
@@ -116,6 +122,7 @@ double euclDistance(double *node1, double *node2)
 }
 
 
+/*
 void addToLinkList(linklist** head, int new_index)
 {// Backward : new element added to the top
 	linklist* new_node=(linklist*) malloc(sizeof(linklist));
@@ -157,37 +164,37 @@ void removeInLinkList(linklist** head, int del_index)
 
 	 free(temp);  // Free memory
 }
+*/
+
 
 sln* method1ePasse(double** input_data, int size_input, double threshold)
 {
+	int k=2,j=1;
 	sln* res=(sln*)malloc(sizeof(sln));
 	res->labels=(int*)calloc((size_input+1),sizeof(int));
-	int k=2,j=1;
-
-	/* temporary variables, used since K isn't known yet (At first K is the whole size_input), freed later */
-	// Doesn't need a buffer since also needed by global solution
-	int *counters=(int*)calloc((size_input+1),sizeof(int));// to quicker find which cluster each element belongs to
-	double** rl=(double**)malloc((size_input+1)*sizeof(double*));// temporary "centroids" (Temporary as don't know how many K needed yet.)
-	double** cl=(double**)malloc((size_input+1)*sizeof(double*));// Needed for "rl", contains the sum (on each dimension) of elements in specific cluster
+	res->counters=(int*)calloc((size_input+1),sizeof(int));
+	res->uavs=(double**)malloc((size_input+1)*sizeof(double*));/* Convenient to keep as whole size, makes no need to reallocate each time a uav is removed/added */
+	double** cl=(double**)malloc((size_input+1)*sizeof(double*));/* temporary variables, contains sum of elements in cluster */
 
 	/* Initialisation steps */
 	for(k=0;k<=size_input;k++)
 	{
-		rl[k]=(double*)calloc(dim,sizeof(double));
+		res->uavs[k]=(double*)calloc(dim,sizeof(double));
+		for(j=0;j<dim;j++)	res->uavs[k][j]=-1;// if uavs coords is (-1,-1), then not deployed
 		cl[k]=(double*)calloc(dim,sizeof(double));
 	}
 
 	/* Init first cluster with first element */
 	for(k=0;k<dim;k++)
 	{
-		rl[1][k]=input_data[1][k];
+		res->uavs[1][k]=input_data[1][k];
 		cl[1][k]=input_data[1][k];
 	}
 
-	counters[1]++;
+	res->counters[1]++;
 	res->labels[1]=1;// label of first element : first cluster
 
-	int K=1;// Number of clusters so far
+	res->n_uavs=1;// Number of clusters so far : 1
 
 	double distance_to_closest_centroid=bound_1*bound_2;// Worst : the extrem limits of the entire map
 	double current_distance=0;
@@ -196,9 +203,9 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 	for(k=2;k<=size_input;k++)
 	{
 		distance_to_closest_centroid=bound_1*bound_2;// Worst : extreme considering map
-		for(j=1;j<=K;j++)
+		for(j=1;j<=res->n_uavs;j++)
 		{
-			current_distance=euclDistance(input_data[k],rl[j]);
+			current_distance=euclDistance(input_data[k],res->uavs[j]);
 			if ( current_distance < distance_to_closest_centroid )
 			{
 				distance_to_closest_centroid=current_distance;// find the closest cluster
@@ -209,50 +216,38 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 
 		if(distance_to_closest_centroid<threshold)
 		{// closest centroid is within admissible range => add element to cluster
-			counters[res->labels[k]]++;
+			res->counters[res->labels[k]]++;
 			/* update centroids */
 			for(j=0;j<dim;j++)
 			{
 				cl[res->labels[k]][j]+=input_data[k][j];
-				rl[res->labels[k]][j]=cl[res->labels[k]][j]/counters[res->labels[k]];
+				res->uavs[res->labels[k]][j]=cl[res->labels[k]][j]/res->counters[res->labels[k]];
 			}
 		}
 		else
 		{// closest centroid is not within admissible range => Create own new cluster
-			K++;
-			res->labels[k]=K;
+			res->n_uavs++;
+			res->labels[k]=res->n_uavs;
 			for(j=0;j<dim;j++)
 			{
 				cl[res->labels[k]][j]=input_data[k][j];
-				rl[res->labels[k]][j]=input_data[k][j];
+				res->uavs[res->labels[k]][j]=input_data[k][j];
 			}
-			counters[K]++;// To [1]
+			res->counters[res->n_uavs]++;// To [1]
 		}
 	}
 
-	/* Write results now that all K clusters are built */
-	res->n_uavs=K;
+
 //	res->covers=(linklist**)malloc((K+1)*sizeof(linklist*));
-	res->uavs=(double**)malloc((K+1)*sizeof(double*));
-	res->counters=(int*)calloc((K+1),sizeof(int));
-	for(k=1;k<=K;k++)
-	{
-		res->counters[k]=counters[k];
-		res->uavs[k]=(double*)calloc(dim,sizeof(double));
 //		for(j=1;j<=res->counters[k];j++)
 //			addToLinkList(&res->covers[k], elts[k][counters[k]]);
-		for(j=0;j<dim;j++)	res->uavs[k][j]=rl[k][j];
-	}
 
 	/* Housekeeping */
 	for(k=0;k<=size_input;k++)
 	{
 		free(cl[k]);
-		free(rl[k]);
 	}
 	free(cl);
-	free(rl);
-	free(counters);
 
 	return res;
 }
@@ -346,6 +341,12 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance)
 }
 
 
+igraph_t* translate(sln* net)
+{
+	
+};
+
+
 int main(int argc, char** argv)
 {
 	readData(argv);
@@ -353,14 +354,14 @@ int main(int argc, char** argv)
 	bound_1=1000;
 	bound_2=1000;
 
-	double threshold=250;
+	double threshold=uavs_range;
 
 	sln *res=method1ePasse(grnds, nbr_grnds, threshold);
 
 	FILE* fp;
 	fp=fopen("rl.csv","w");
 	int i=0,j=0;
-	for(i=1;i<res->n_uavs;i++)
+	for(i=1;i<=res->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim
@@ -374,7 +375,7 @@ int main(int argc, char** argv)
 	sln *res2=method1ePasse(res->uavs, res->n_uavs, threshold);
 
 	fp=fopen("rl2.csv","w");
-	for(i=1;i<res2->n_uavs;i++)
+	for(i=1;i<=res2->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim
@@ -387,7 +388,7 @@ int main(int argc, char** argv)
 	k_means(grnds, nbr_grnds, res, 0.0001);
 
 	fp=fopen("rlkmeans.csv","w");
-	for(i=1;i<res->n_uavs;i++)
+	for(i=1;i<=res->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
 			// skip comma missing for last dim

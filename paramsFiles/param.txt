@@ -1,5 +1,7 @@
 PROBLEM_CRITERIA
+opt_path= optimumUAVs/optimum250.txt
 PopSize= 250
+SubPopSize= 4
 mutaprob= 0.1
 rank1maxsize= 0.2
 crowdSavePercent= 0.1

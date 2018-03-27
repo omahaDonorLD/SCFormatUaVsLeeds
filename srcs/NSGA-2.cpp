@@ -531,7 +531,7 @@ void generate(IndividuFactory usine, vector<Individu*> &myResult )
 	/* Création des individus GRASP */
 	for( int p = 0 ; p < sum ; ++p )
 	{
-		Individu::createGRASPFIT( Coef[p], alpha ) ;
+		Individu::creategraspfit( Coef[p], alpha ) ;
 
 		for( int i = 0 ; i < n_Grasp ; ++i )
 		{

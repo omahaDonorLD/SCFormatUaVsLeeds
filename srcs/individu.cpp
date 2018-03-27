@@ -767,14 +767,14 @@ void Individu::randomize()
  *	\param alpha coefficient glouton/aléatoire permettant de créer la première RCList.
  *
  */
-void Individu::createGRASPFIT(int* Coef, double alpha)
+void Individu::creategraspfit(int* Coef, double alpha)
 {
 
-	//cout << " Start GRASPFIT " << endl ;
+	//cout << " Start graspfit " << endl ;
 	double fitness[nbr_uavs] ;
 	int fitweight[nbr_uavs];
 	RCList.clear() ;
-	GRASPFIT = vector<double>() ;
+	graspfit = vector<double>() ;
 
 	/* Calcul des valeurs GRASP de chaque item en fonction des coefficients de direction */
 	for(int curr_item = 0; curr_item < nbr_uavs ; ++curr_item)
@@ -797,10 +797,10 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 		fitness[curr_item] = fitness[curr_item] / fitweight[curr_item];
 	}
 
-	/* Report des valeurs de fitness de chaque item dans GRASPFIT */
+	/* Report des valeurs de fitness de chaque item dans graspfit */
 	for( int i = 0 ; i < nbr_uavs ; ++i )
 	{
-		GRASPFIT.push_back( fitness[i] );
+		graspfit.push_back( fitness[i] );
 	}
 
 	int cmin = INT_MAX ;
@@ -809,26 +809,26 @@ void Individu::createGRASPFIT(int* Coef, double alpha)
 	/* Recherche des fitness min et max */
 	for( int i = 0; i < nbr_uavs ; ++i )
 	{
-			if( GRASPFIT[i] > cmax )
+			if( graspfit[i] > cmax )
 			{
-				cmax = GRASPFIT[i] ;
+				cmax = graspfit[i] ;
 			}
-			else if( GRASPFIT[i] < cmin )
+			else if( graspfit[i] < cmin )
 			{
-				cmin = GRASPFIT[i] ;
+				cmin = graspfit[i] ;
 			}
 	}
 
 	/* Création de la première RCList GRASP en fonction du coefficient glouton aléatoire alpha */
 	for( int i = 0; i < nbr_uavs ; ++i )
 	{
-		if( GRASPFIT[i] >= ( cmin + alpha*(cmax-cmin) ) )
+		if( graspfit[i] >= ( cmin + alpha*(cmax-cmin) ) )
 		{
 			RCList.push_back(i) ;
 		}
 	}
 
-//cout << " End GRASPFIT " << endl ;
+//cout << " End graspfit " << endl ;
 }
 
 
@@ -866,13 +866,13 @@ void Individu::GRASP( double alpha )
     	{
     		if( picked_objects[i] == 0)
     		{
-    			if( GRASPFIT[i] > cmax )
+    			if( graspfit[i] > cmax )
     			{
-    				cmax = GRASPFIT[i] ;
+    				cmax = graspfit[i] ;
     			}
-    			else if( GRASPFIT[i] < cmin )
+    			else if( graspfit[i] < cmin )
     			{
-    				cmin = GRASPFIT[i] ;
+    				cmin = graspfit[i] ;
     			}
     		}
     	}
@@ -880,7 +880,7 @@ void Individu::GRASP( double alpha )
     	/* Calcul des nouvelles RCList en fonction des items non pris */
     	for( int i = 0; i < nbr_uavs ; ++i )
     	{
-    		if( GRASPFIT[i] >= ( cmin + alpha*(cmax-cmin) ) && picked_objects[i]==0 )
+    		if( graspfit[i] >= ( cmin + alpha*(cmax-cmin) ) && picked_objects[i]==0 )
     		{
     			RCList2.push_back(i) ;
     		}
