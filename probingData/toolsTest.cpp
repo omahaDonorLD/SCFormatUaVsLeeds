@@ -5,6 +5,7 @@
 #include <string>
 #include <math.h>
 
+#include <igraph.h>
 #include <assert.h>
 #include <float.h>
 
@@ -92,6 +93,9 @@ void readData(char** argv)
 
 	// read number of ground nodes and their coordinates
 	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
+
+	// read limits of map
+	if( fscanf(fp,"%lf,%lf", &bound_1,&bound_2) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
 	/* allocate memory for ground nodes */
 	grnds=(double**)malloc((nbr_grnds+1)*sizeof(double*));
@@ -350,9 +354,6 @@ igraph_t* translate(sln* net)
 int main(int argc, char** argv)
 {
 	readData(argv);
-
-	bound_1=1000;
-	bound_2=1000;
 
 	double threshold=uavs_range;
 

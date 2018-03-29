@@ -20,12 +20,10 @@ a given graph model : Uavs are nodes, links are when 2 nodes are connected.
 Objective (among usuals) : CO, FTO (as starting, 2nd objective good that Evo algo (crossover of feasible random slns))
 	RO constraint : number of 
 
-Questions to D G Reina :
-	- Which strategy for constructing first solution.
-	- if redundancy on ground nodes, what about redondancy on uavs making the network connected ?
+Questions to D G Reina : if redundancy on ground nodes, what about redondancy on uavs making the network connected ?
 	- using nsga2 to evaluate
 
-proposed improvement : build init solution feasible and fast. for comparisons use 2d scaterplot : x : number of ground nodes (unit of tens from 50 : 50,60,70,80,etc.), y : time
+proposition : for comparisons use 2d scaterplot : x : number of ground nodes (unit of tens from 50 : 50,60,70,80,etc.), y : time
 	-> supposition : can heavily improve complexity in time (for cxity in #of ites, well, still a heuristic) (test code : 20 mins ???)
 	-> Methods : clustering (kmeans first)
 

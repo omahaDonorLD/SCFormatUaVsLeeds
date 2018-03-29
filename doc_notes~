@@ -1,5 +1,5 @@
 
-step : build function translating network into graph, 
+step : build function translating network into graph, read solutions for SCP
 
 2 objectives : (1) min #of uavs, (2) max fto. cstrts : all elements covered by at least 2 uavs, connectivity constraint
 check if which politic to use to build multiple initial solutions (different size of K, change threshold for onePassMethod ?...)

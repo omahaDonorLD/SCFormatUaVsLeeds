@@ -76,6 +76,9 @@ void readData(char** argv)
 	// read number of ground nodes and their coordinates
 	if( fscanf(fp,"%d", &nbr_grnds) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
 
+	// read limits of map
+	if( fscanf(fp,"%lf,%lf", &bound_1,&bound_2) < 0 ){STREAM_FAIL(__FILE__, __LINE__, __FUNCTION__);}
+
 	/* allocate memory for ground nodes */
 	grnds=(double**)malloc((nbr_grnds+1)*sizeof(double*));
 	if(grnds==NULL){ /* memory allocation failure */ MEMO_FAIL(__FILE__, __LINE__, __FUNCTION__); }
@@ -123,9 +126,9 @@ double euclDistance(double *node1, double *node2)
 /** 	\brief Check wether the ground node is covered by the uav
  *		\param a pointer on the uav
  */
-bool inRange(double* ground, double* uav)
+bool inRange(double* node1, double* node2)
 {
-	return ( euclDistance(ground,uav) >= uavs_range ? false, true);
+	return ( euclDistance(node1,node2) >= uavs_range ? false : true);
 };
 
 
@@ -205,7 +208,6 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 		free(cl[k]);
 	}
 	free(cl);
-	free(counters);
 
 	return res;
 };
