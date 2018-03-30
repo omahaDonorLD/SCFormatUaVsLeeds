@@ -251,6 +251,27 @@ igraph_t translate(sln* net)
 	fclose(fp);
 
 
+	igraph_vector_ptr_t comps_list;
+	igraph_vector_ptr_init(&comps_list, 0);// list of components first need to be initiated before call to decompose
+	/* 1) -1 : maxcompno, maximum number of components to return. -1 if nolimit
+	 * 2)  2 : minelements, minimum number of vertices a component contains to be placed in the components vector. Here 2 skips isolated vertices */
+	int someint=igraph_decompose(&gr, &comps_list,IGRAPH_WEAK, -1, 2);
+	for(i=0;i<igraph_vector_ptr_size(&comps_list);i++)
+	{
+		igraph_t *buff=VECTOR(comps_list)[i];
+		igraph_es_t es;
+		igraph_es_all(buff, &es);
+		while (!igraph_es_end(buff, &es))
+		{
+			igraph_real_t *from, *to;
+			igraph_get_vertex_attribute(buff, "id", igraph_es_from(buff, &es), (void**) &from, 0);
+			igraph_get_vertex_attribute(buff, "id", igraph_es_to(buff, &es), (void**) &to, 0);
+			printf("%li %li\n", (long int) *from, (long int) *to);
+			igraph_es_next(buff, &es);
+		}
+	}
+//	free_complist(&complist); */
+
 //	igraph_destroy(&gr);
 //	igraph_vector_destroy(&edgs);
 

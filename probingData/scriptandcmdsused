@@ -1,4 +1,5 @@
 
+gcc -g -o test igraph_test.c -I ../opt/igraph-0.7.1/include/ -L ../opt/igraph-0.7.1/lib/ -ligraph -lm -g
 set datafile separator ","
 plot 'coords.csv' using 1:2, 'rl.csv' using 1:2 lc rgb 'blue' pt 9, 'rl2.csv' using 1:2 lc rgb 'green' pt 5, 'rlkmeans.csv' using 1:2 lc rgb 'black' pt 3
 plot 'coords.csv' using 1:2 notitle, 'rl.csv' using 1:2 lc rgb 'blue' pt 9 notitle, 'graphs.csv' using 1:2 w lines notitle
