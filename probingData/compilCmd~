@@ -1,2 +1,0 @@
-gcc -g -I ../opt/igraph-0.7.1/include/ -L ../opt/igraph-0.7.1/lib/ -o test toolsTest.cpp -lm
-

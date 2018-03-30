@@ -28,6 +28,7 @@ void MEMO_FAIL(char* FROM_FILE, int AT_LINE, char* IN_FUNCTION)
 typedef struct sln{
 	int* labels;// Size : the total number of ground nodes, gives for each element the cluster it belongs to.
 	double** uavs;// contains the coordinates of uavs[i] in the solution
+	double** distances;// squared matrix of distances between uavs
 	int* counters;// number of elements (size : n_uavs) covered by the uav
 	int n_uavs;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
 }sln;
@@ -88,6 +89,7 @@ bool readData(char** argv);
 void writeData(sln* a_sln);
 double euclDistance(double *node1, double *node2);
 bool inRange(double* node1, double* node2);// work both for comparing : uav-uav, uav-ground node
+void updateDistMat(sln* net);
 
 // clustering methods
 sln* method1ePasse(double** input_data, int size_input, double threshold);

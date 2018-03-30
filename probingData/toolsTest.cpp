@@ -126,6 +126,7 @@ double euclDistance(double *node1, double *node2)
 }
 
 
+
 /*
 void addToLinkList(linklist** head, int new_index)
 {// Backward : new element added to the top
@@ -318,7 +319,7 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance)
     } while (fabs(error - old_error) > error_tolerance);/* if for each iteration, the number of changes made are not different from previous */
 
 
-	// rebuild the variables 
+	// rebuild the variables
 	// first free previous
 /*
 	linklist* ite;
@@ -347,7 +348,7 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance)
 
 igraph_t* translate(sln* net)
 {
-	
+
 };
 
 

@@ -22,6 +22,7 @@ typedef struct sln{
 	double** uavs;/* matching "contains" list with "uavs_indices". The latter contains the indices 'i'
 							of elements in list "uavs" so that one can finds the coordinates of uavs[i] */
 	int* counters;// number of elements (size : n_uavs) covered by the uav
+	double** distances;// squared matrix of distances between uavs
 	int n_uavs;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
 }sln;
 
@@ -98,6 +99,14 @@ double euclDistance(double *node1, double *node2)
     return sqrt(norm);
 }
 
+void updateDistMat(sln* net)
+{
+	int i,j;
+	for(i=1;i<=net->n_uavs;i++)
+		for(j=i+1;j<=net->n_uavs;j++)
+			net->distances[i][j]=net->distances[j][i]=euclDistance(net->uavs[i],net->uavs[j]);
+}
+
 
 bool inRange(double* node1, double* node2)
 {
@@ -112,6 +121,10 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 	res->counters=(int*)calloc((size_input+1),sizeof(int));
 	res->uavs=(double**)malloc((size_input+1)*sizeof(double*));/* Convenient to keep as whole size, makes no need to reallocate each time a uav is removed/added */
 	double** cl=(double**)malloc((size_input+1)*sizeof(double*));/* temporary variables, contains sum of elements in cluster */
+	res->distances=(double**)malloc(max_uavs_avail+1*sizeof(double*));
+	for(k=0;k<=max_uavs_avail;k++)
+		res->distances[k]=(double*)calloc(max_uavs_avail+1,sizeof(double));
+
 
 	/* Initialisation steps */
 	for(k=0;k<=size_input;k++)
@@ -174,6 +187,8 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 		}
 	}
 
+	updateDistMat(res);
+
 	/* Housekeeping */
 	for(k=0;k<=size_input;k++)
 	{
@@ -194,7 +209,7 @@ igraph_t translate(sln* net)
 		int node2;
 		struct linklist* next;
 	}linklist;
-	
+
 	linklist* add=NULL;
 	linklist** head=&add;
 	int i=0,j=0;
@@ -255,7 +270,7 @@ igraph_t translate(sln* net)
 	igraph_vector_ptr_init(&comps_list, 0);// list of components first need to be initiated before call to decompose
 	/* 1) -1 : maxcompno, maximum number of components to return. -1 if nolimit
 	 * 2)  2 : minelements, minimum number of vertices a component contains to be placed in the components vector. Here 2 skips isolated vertices */
-	int someint=igraph_decompose(&gr, &comps_list,IGRAPH_WEAK, -1, 2);
+	int someintdontknowyetwhatfor=igraph_decompose(&gr, &comps_list,IGRAPH_WEAK, -1, 2);
 	for(i=0;i<igraph_vector_ptr_size(&comps_list);i++)
 	{
 		igraph_t *buff=VECTOR(comps_list)[i];
@@ -277,13 +292,13 @@ igraph_t translate(sln* net)
 
 	/* Housekeeping */
 	ite = *head;
-	linklist* tmp; 
-	while (ite != NULL) 
+	linklist* tmp;
+	while (ite != NULL)
 	{
 		tmp = ite;
 		ite=ite->next;
 		free(tmp);
-	}	
+	}
 
 	return gr;
 };
@@ -299,7 +314,7 @@ int main(int argc, char** argv)
 	double threshold=uavs_range/2;
 
 	sln *res=method1ePasse(grnds, nbr_grnds, threshold);
-	
+
 	int i=0,j=0;
 	FILE* fp;
 	fp=fopen("rl.csv","w");

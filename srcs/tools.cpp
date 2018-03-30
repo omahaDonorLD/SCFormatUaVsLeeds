@@ -132,6 +132,16 @@ bool inRange(double* node1, double* node2)
 };
 
 
+void updateDistMat(sln* net)
+{
+	int i,j;
+	for(i=1;i<=net->n_uavs;i++)
+		for(j=i+1;j<=net->n_uavs;j++)
+			net->distances[i][j]=net->distances[j][i]=euclDistance(net->uavs[i],net->uavs[j]);
+}
+
+
+
 sln* method1ePasse(double** input_data, int size_input, double threshold)
 {
 	int k=2,j=1;
@@ -140,6 +150,11 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 	res->counters=(int*)calloc((size_input+1),sizeof(int));
 	res->uavs=(double**)malloc((size_input+1)*sizeof(double*));/* Convenient to keep as whole size, makes no need to reallocate each time a uav is removed/added */
 	double** cl=(double**)malloc((size_input+1)*sizeof(double*));/* temporary variables, contains sum of elements in cluster */
+	// compute and fill the matrix of distances between uavs
+	res->distances=(double**)malloc(res->n_uavs*sizeof(double*));
+	for(k=1;k<=res->n_uavs;k++)
+		res->distances[k]=(double*)calloc(res->n_uavs,sizeof(double));
+
 
 	/* Initialisation steps */
 	for(k=0;k<=size_input;k++)
@@ -201,6 +216,8 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 			res->counters[res->n_uavs]++;// To [1]
 		}
 	}
+
+	updateDistMat(res);
 
 	/* Housekeeping */
 	for(k=0;k<=size_input;k++)
