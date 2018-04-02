@@ -302,3 +302,11 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance)
 	free(c1);
 
 };
+
+
+void freeSln(sln* free_sln)
+{
+	igraph_destroy(&free_sln->gr);
+	igraph_matrix_destroy(&free_sln->dists);
+	free(free_sln);
+};

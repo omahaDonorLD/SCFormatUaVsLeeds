@@ -337,6 +337,13 @@ void translate(sln* net)
 */
 };
 
+void freeSln(sln* free_sln)
+{
+	igraph_destroy(&free_sln->gr);
+	igraph_matrix_destroy(&free_sln->dists);
+	free(free_sln);
+};
+
 
 int main(int argc, char** argv)
 {

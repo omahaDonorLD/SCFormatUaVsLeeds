@@ -98,7 +98,7 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance);
 sln* addUaV(sln to_sln, double* coords);
 sln* removeUaV(sln from_sln, int index_uav);
 sln* copySln(sln* sln_to_copy);
-void freeSln(sln* sln_to_free);
+void freeSln(sln* free_sln);
 igraph_t* translate(sln* net);// Builds the graph matching the solution
 void freeNetwork(igraph_t* net);// Deallocate memory of network
 
