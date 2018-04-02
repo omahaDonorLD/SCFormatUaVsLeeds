@@ -22,7 +22,9 @@ typedef struct sln{
 	double** uavs;/* matching "contains" list with "uavs_indices". The latter contains the indices 'i'
 							of elements in list "uavs" so that one can finds the coordinates of uavs[i] */
 	int* counters;// number of elements (size : n_uavs) covered by the uav
-	double** distances;// squared matrix of distances between uavs
+	// double** distances;// squared matrix of distances between uavs
+	igraph_matrix_t dists;// squared matrix of distances between uavs. Type igraph to save space
+	igraph_t gr;// corresponding graph of the solution. Needed for connectivity checking
 	int n_uavs;// number of nodes in network : either nodes are uavs (sln : set of uavs), or ground nodes (uav : set of ground nodes)
 }sln;
 
@@ -39,7 +41,8 @@ double bound_2;
 
 void readData(char** argv);
 double euclDistance(double *node1, double *node2);
-igraph_t translate(sln* net);
+void translate(sln* net);
+void updateDistMat(sln* net, double range);
 
 void readData(char** argv)
 {
@@ -99,18 +102,24 @@ double euclDistance(double *node1, double *node2)
     return sqrt(norm);
 }
 
-void updateDistMat(sln* net)
-{
+void updateDistMat(sln* net, double range)
+{// updates the matrix of distances to avoid constantly having to compute them
 	int i,j;
+	double dist=0;
 	for(i=1;i<=net->n_uavs;i++)
 		for(j=i+1;j<=net->n_uavs;j++)
-			net->distances[i][j]=net->distances[j][i]=euclDistance(net->uavs[i],net->uavs[j]);
+		{
+			dist=euclDistance(net->uavs[i],net->uavs[j]);
+			dist=( dist > range ? 0 : dist );
+			MATRIX(net->dists, i, j)=dist;
+			MATRIX(net->dists, j, i)=dist;
+		}
 }
 
 
-bool inRange(double* node1, double* node2)
+bool inRange(double* node1, double* node2, double range)
 {
-	return ( euclDistance(node1,node2) >= uavs_range ? false : true);
+	return ( euclDistance(node1,node2) >= range ? false : true);
 };
 
 sln* method1ePasse(double** input_data, int size_input, double threshold)
@@ -121,9 +130,10 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 	res->counters=(int*)calloc((size_input+1),sizeof(int));
 	res->uavs=(double**)malloc((size_input+1)*sizeof(double*));/* Convenient to keep as whole size, makes no need to reallocate each time a uav is removed/added */
 	double** cl=(double**)malloc((size_input+1)*sizeof(double*));/* temporary variables, contains sum of elements in cluster */
-	res->distances=(double**)malloc(max_uavs_avail+1*sizeof(double*));
-	for(k=0;k<=max_uavs_avail;k++)
-		res->distances[k]=(double*)calloc(max_uavs_avail+1,sizeof(double));
+	igraph_matrix_init(&res->dists,(size_input+1),(size_input+1));
+// 	if k<=max_uavs_avail and there are less uavs than needed then -> segmentation fault. Safety:distances** squared matrix  (size_input+1)*(size_input+1)
+//	for(k=0;k<=size_input;k++)
+//		res->distances[k]=(double*)calloc((size_input+1),sizeof(double));
 
 
 	/* Initialisation steps */
@@ -187,7 +197,7 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 		}
 	}
 
-	updateDistMat(res);
+	updateDistMat(res, threshold*2);
 
 	/* Housekeeping */
 	for(k=0;k<=size_input;k++)
@@ -200,8 +210,10 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 };
 
 
-igraph_t translate(sln* net)
+void translate(sln* net)
 {
+	int i=0,j=0;
+/*
 	int count=0;// number of edges of graph
 
 	typedef struct linklist{
@@ -212,11 +224,12 @@ igraph_t translate(sln* net)
 
 	linklist* add=NULL;
 	linklist** head=&add;
-	int i=0,j=0;
-	/* Build a linked list of uavs that can communicate => gather Links for graph) */
+	i=j=0;
+
+	// Builds a linked list of uavs that can communicate => gather Links for graph)
 	for(i=1;i<=net->n_uavs;i++)
 		for(j=i+1;j<=net->n_uavs;j++)
-			if(inRange(net->uavs[i],net->uavs[j]))
+			if(inRange(net->uavs[i],net->uavs[j], uavs_range))
 			{// build links whenever two uavs can communicate (are in admissible range)
 				linklist* new_node=(linklist*) malloc(sizeof(linklist));
 				new_node->node1=i;
@@ -225,14 +238,15 @@ igraph_t translate(sln* net)
 				*head=new_node;
 				count++;
 			}
-
-	igraph_t gr;
-	igraph_vector_t edgs;
-	int resvect=igraph_vector_init(&edgs, count*2);
+*/
+//	igraph_vector_t edgs;
+//	if(igraph_vector_init(&edgs, count*2)==IGRAPH_ENOMEM)
+//		printf(" Memory issues, vector init failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
 
 	i=0;
-	linklist* ite=*head;
+//	linklist* ite=*head;
 
+/*
 	while (ite != NULL)
 	{
 		VECTOR(edgs)[i]=ite->node1;
@@ -240,10 +254,13 @@ igraph_t translate(sln* net)
 		ite=ite->next;
 		i+=2;
 	}
-
-	/* igraph : from 0 to n-1 vertices */
-	int resgraph=igraph_create(&gr, &edgs, net->n_uavs+1, false);
+*/
+	// igraph : from 0 to n-1 vertices
 /*
+	int buff=igraph_create(&net->gr, &edgs, net->n_uavs+1, false);
+	if ( buff == IGRAPH_EINVEVECTOR || buff == IGRAPH_EINVVID )
+			printf(" graph init issues (%s) failed %s, %d, %s \n", buff== IGRAPH_EINVEVECTOR ? "IGRAPH_EINVEVECTOR" : "IGRAPH_EINVVID" , __FILE__, __LINE__, __FUNCTION__);
+
 	j=0;
 	for (i=0; i<igraph_vector_size(&edgs); i+=2) {
 		printf("%d) [%li-%li] \n", j, (long int) VECTOR(edgs)[i], (long int) VECTOR(edgs)[i+1] );
@@ -251,25 +268,39 @@ igraph_t translate(sln* net)
 	}
 */
 
+
+	if ( igraph_weighted_adjacency(&net->gr, &net->dists, IGRAPH_ADJ_MAX, NULL, 1) == IGRAPH_NONSQUARE )
+			printf(" Something went wrong for graph init, failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
+
 	FILE* fp;
 	fp=fopen("graphs.csv","w");
-	int buff1,buff2;// needed for the cast
-	for (i=0; i<igraph_vector_size(&edgs); i+=2)
+	igraph_vector_t ite_edgs;
+	igraph_vector_init(&ite_edgs, 0);
+	igraph_get_edgelist(&net->gr, &ite_edgs, 0);
+	int n=igraph_ecount(&net->gr);
+	long int buff1,buff2;// needed for the cast
+	double weight;
+	for (i=0, j=0; j<n; i+=2, j++)
 	{
-		buff1=VECTOR(edgs)[i];
-		buff2=VECTOR(edgs)[i+1];
+		buff1=VECTOR(ite_edgs)[i];
+		buff2=VECTOR(ite_edgs)[i+1];
+		weight=EAN(&net->gr, "weight", j);
 //		fprintf(fp,"%lf,%lf,%lf,%lf\n", net->uavs[buff1][0], net->uavs[buff1][0], net->uavs[buff2][0], net->uavs[buff2][0]);
 		fprintf(fp,"%lf,%lf\n", net->uavs[buff1][0], net->uavs[buff1][1]);
 		fprintf(fp,"%lf,%lf\n", net->uavs[buff2][0], net->uavs[buff2][1]);
 		fprintf(fp,"\n");
+//		printf("%ld,%ld,%lf\n",buff1,buff2,weight);
 	}
 	fclose(fp);
 
 
+/*
 	igraph_vector_ptr_t comps_list;
 	igraph_vector_ptr_init(&comps_list, 0);// list of components first need to be initiated before call to decompose
+*/
 	/* 1) -1 : maxcompno, maximum number of components to return. -1 if nolimit
 	 * 2)  2 : minelements, minimum number of vertices a component contains to be placed in the components vector. Here 2 skips isolated vertices */
+/*
 	int someintdontknowyetwhatfor=igraph_decompose(&gr, &comps_list,IGRAPH_WEAK, -1, 2);
 	for(i=0;i<igraph_vector_ptr_size(&comps_list);i++)
 	{
@@ -285,12 +316,14 @@ igraph_t translate(sln* net)
 			igraph_es_next(buff, &es);
 		}
 	}
+*/
 //	free_complist(&complist); */
 
 //	igraph_destroy(&gr);
 //	igraph_vector_destroy(&edgs);
 
 	/* Housekeeping */
+/*
 	ite = *head;
 	linklist* tmp;
 	while (ite != NULL)
@@ -301,11 +334,16 @@ igraph_t translate(sln* net)
 	}
 
 	return gr;
+*/
 };
 
 
 int main(int argc, char** argv)
 {
+
+	/* !!! igraph : turn on attribute handling  Ie. even if you don't manipulate attributes explicitly, but create a graph that might have some attributes, eg. read a graph a GraphML file, you need this call before, otherwise the attributes are dropped. */
+	igraph_i_set_attribute_table(&igraph_cattribute_table);
+
 	readData(argv);
 
 	bound_1=1000;
@@ -316,6 +354,7 @@ int main(int argc, char** argv)
 	sln *res=method1ePasse(grnds, nbr_grnds, threshold);
 
 	int i=0,j=0;
+
 	FILE* fp;
 	fp=fopen("rl.csv","w");
 	for(i=1;i<=res->n_uavs;i++)
@@ -327,7 +366,8 @@ int main(int argc, char** argv)
 		}
 	fclose(fp);
 
-	igraph_t graph_sol=translate(res);
+	translate(res);
+//	igraph_t graph_sol=translate(res);
 
 
 	printf("%lf\n",grnds[17][0]);

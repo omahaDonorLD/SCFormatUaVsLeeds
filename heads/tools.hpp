@@ -88,8 +88,8 @@ double uavs_range;	// all ranges of available uavs
 bool readData(char** argv);
 void writeData(sln* a_sln);
 double euclDistance(double *node1, double *node2);
-bool inRange(double* node1, double* node2);// work both for comparing : uav-uav, uav-ground node
-void updateDistMat(sln* net);
+bool inRange(double* node1, double* node2, double range);// work both for comparing : uav-uav, uav-ground node
+void updateDistMat(sln* net, double range);
 
 // clustering methods
 sln* method1ePasse(double** input_data, int size_input, double threshold);

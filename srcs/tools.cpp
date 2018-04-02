@@ -126,18 +126,23 @@ double euclDistance(double *node1, double *node2)
 /** 	\brief Check wether the ground node is covered by the uav
  *		\param a pointer on the uav
  */
-bool inRange(double* node1, double* node2)
+bool inRange(double* node1, double* node2, double range)
 {
-	return ( euclDistance(node1,node2) >= uavs_range ? false : true);
+	return ( euclDistance(node1,node2) >= range ? false : true);
 };
 
 
-void updateDistMat(sln* net)
-{
+void updateDistMat(sln* net, double range)
+{// updates the matrix of distances to avoid constantly having to compute them
 	int i,j;
+	double dist;
 	for(i=1;i<=net->n_uavs;i++)
 		for(j=i+1;j<=net->n_uavs;j++)
-			net->distances[i][j]=net->distances[j][i]=euclDistance(net->uavs[i],net->uavs[j]);
+		{
+			dist=euclDistance(net->uavs[i],net->uavs[j]);
+			dist=( dist > range ? 0 : dist );
+			net->distances[i][j]=net->distances[j][i]=dist;
+		}
 }
 
 
@@ -290,6 +295,7 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance)
 
     } while (fabs(error - old_error) > error_tolerance);/* if for each iteration, the number of changes made are not different from previous */
 
+	updateDistMat(clusts);
 
 	/* housekeeping */
 	for(h=0;h<=clusts->n_uavs;h++)	free(c1[h]);

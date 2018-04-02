@@ -6,6 +6,10 @@ step : build function translating network into graph, read solutions for SCP
 2 objectives : (1) min #of uavs, (2) max fto. cstrts : all elements covered by at least 2 uavs, connectivity constraint
 check if which politic to use to build multiple initial solutions (different size of K, change threshold for onePassMethod ?...)
 
+/* Note : !!! igraph with attributes : turn on attribute handling. Even if attributes not manipulated explicitly/implicitly, always need this call before, otherwise the attributes are dropped. */
+igraph_i_set_attribute_table(&igraph_cattribute_table);
+srcs : https://stackoverflow.com/questions/15654798/creating-a-weighted-undirected-graph-in-igraph-in-c-c
+
 
 why linklist : size arrays fixed, Inserting a new element in array is expensive, since room has to be created and for this existing elements have to be shifted.
 
