@@ -213,10 +213,65 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 void translate(sln* net)
 {
 	int i=0,j=0;
-	// create general weighted graph, size : n_grnds^2
+/*
+	int count=0;// number of edges of graph
+
+	typedef struct linklist{
+		int node1;
+		int node2;
+		struct linklist* next;
+	}linklist;
+
+	linklist* add=NULL;
+	linklist** head=&add;
+	i=j=0;
+
+	// Builds a linked list of uavs that can communicate => gather Links for graph)
+	for(i=1;i<=net->n_uavs;i++)
+		for(j=i+1;j<=net->n_uavs;j++)
+			if(inRange(net->uavs[i],net->uavs[j], uavs_range))
+			{// build links whenever two uavs can communicate (are in admissible range)
+				linklist* new_node=(linklist*) malloc(sizeof(linklist));
+				new_node->node1=i;
+				new_node->node2=j;
+				new_node->next=*head;
+				*head=new_node;
+				count++;
+			}
+*/
+//	igraph_vector_t edgs;
+//	if(igraph_vector_init(&edgs, count*2)==IGRAPH_ENOMEM)
+//		printf(" Memory issues, vector init failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
+
+	i=0;
+//	linklist* ite=*head;
+
+/*
+	while (ite != NULL)
+	{
+		VECTOR(edgs)[i]=ite->node1;
+		VECTOR(edgs)[i+1]=ite->node2;
+		ite=ite->next;
+		i+=2;
+	}
+*/
+	// igraph : from 0 to n-1 vertices
+/*
+	int buff=igraph_create(&net->gr, &edgs, net->n_uavs+1, false);
+	if ( buff == IGRAPH_EINVEVECTOR || buff == IGRAPH_EINVVID )
+			printf(" graph init issues (%s) failed %s, %d, %s \n", buff== IGRAPH_EINVEVECTOR ? "IGRAPH_EINVEVECTOR" : "IGRAPH_EINVVID" , __FILE__, __LINE__, __FUNCTION__);
+
+	j=0;
+	for (i=0; i<igraph_vector_size(&edgs); i+=2) {
+		printf("%d) [%li-%li] \n", j, (long int) VECTOR(edgs)[i], (long int) VECTOR(edgs)[i+1] );
+		j++;
+	}
+*/
+
+
 	if ( igraph_weighted_adjacency(&net->gr, &net->dists, IGRAPH_ADJ_MAX, NULL, 1) == IGRAPH_NONSQUARE )
 			printf(" Something went wrong for graph init, failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
-	// write into file coordinates of uavs
+
 	FILE* fp;
 	fp=fopen("graphs.csv","w");
 	igraph_vector_t ite_edgs;
@@ -230,52 +285,46 @@ void translate(sln* net)
 		buff1=VECTOR(ite_edgs)[i];
 		buff2=VECTOR(ite_edgs)[i+1];
 		weight=EAN(&net->gr, "weight", j);
+//		fprintf(fp,"%lf,%lf,%lf,%lf\n", net->uavs[buff1][0], net->uavs[buff1][0], net->uavs[buff2][0], net->uavs[buff2][0]);
 		fprintf(fp,"%lf,%lf\n", net->uavs[buff1][0], net->uavs[buff1][1]);
 		fprintf(fp,"%lf,%lf\n", net->uavs[buff2][0], net->uavs[buff2][1]);
 		fprintf(fp,"\n");
-//printf("%ld,%ld,%lf\n",buff1,buff2,weight);
+//		printf("%ld,%ld,%lf\n",buff1,buff2,weight);
 	}
 	fclose(fp);
 
-	// subgraph, true size : (1,...,n_uavs)^2
+/*
+	igraph_vector_ptr_t compolist;
+	if(igraph_vector_ptr_init(&compolist, 0)==IGRAPH_ENOMEM)
+		printf(" Memory issues, vector init failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
+	n=igraph_vector_ptr_size(&compolist);
+	for (i=0; i<n; i++) {
+		igraph_vector_t *v=(igraph_vector_t *)VECTOR(compolist)[i];
+		igraph_vector_print(v);
+		igraph_vector_destroy(v);
+		igraph_free(v);
+	}
+	igraph_vector_ptr_destroy(&compolist);
+*/
+
 	igraph_t true_gr;
 	igraph_vs_t vs;
 	igraph_vs_seq(&vs, 1, net->n_uavs);
-	// i here is used as just a buffer
-	i=igraph_induced_subgraph(&net->gr, &true_gr, vs, IGRAPH_SUBGRAPH_COPY_AND_DELETE);
-	if(i==IGRAPH_ENOMEM || i==IGRAPH_EINVVID)
-		printf(" %s issue, induced subgraph failed %s, %d, %s \n", ( i==IGRAPH_ENOMEM ? "IGRAPH_ENOMEM": "IGRAPH_EINVVID"), __FILE__, __LINE__, __FUNCTION__);
-	// gets labels of connected components of network
-	igraph_vector_t labels, compssizes;
-	igraph_integer_t ncomps=0;
-	if(igraph_vector_init(&labels, 0)==IGRAPH_ENOMEM || igraph_vector_init(&compssizes, 0)==IGRAPH_ENOMEM)
+	printf("res subgraph:%d\n",igraph_subgraph(&net->gr, &true_gr, vs));
+
+	igraph_vector_t mylist1,mylist2;
+	igraph_integer_t anint=0;
+	if(igraph_vector_init(&mylist1, 0)==IGRAPH_ENOMEM || igraph_vector_init(&mylist2, 0)==IGRAPH_ENOMEM)
 		printf(" Memory issues, vector init failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
-	igraph_clusters(&true_gr, &labels, &compssizes, &ncomps, IGRAPH_WEAK);
-//printf("NUMBER OF COMPONENTS %li\n", (long int)ncomps);
-	// write connected components coordinates into files
-	FILE* nfp[nbr_grnds+1];
-	char name[100];
-	for(i=0;i<ncomps;i++)
-	{
-		sprintf(name,"comp-%d.csv",i);
-		nfp[i]=fopen(name,"w");
-	}
+//	fp=fopen("components.csv","w");
+	igraph_clusters(&true_gr, &mylist1, &mylist2, &anint, IGRAPH_WEAK);
+	printf("NUMBER OF COMPONENTS %li\n", (long int)anint);
+//	igraph_write_graph_edgelist((igraph_t*)VECTOR(compolist)[0], fp);
+//	fclose(fp);
 
 	for(i=1;i<=net->n_uavs;i++)
-	{
-		buff1=(long int)VECTOR(labels)[i];
-		for (j=0;j<dim;j++)
-		{
-			// skip comma missing for last dim
-			if(j==dim-1)	fprintf(nfp[buff1],"%lf\n", net->uavs[i][j]);
-			else fprintf(nfp[buff1],"%lf,", net->uavs[i][j]);
-		}
-	}
-
-	for(i=0;i<ncomps;i++)
-		fclose(nfp[i]);
-
-/*
+		printf("[%d]- %li ", i, (long int)VECTOR(mylist1)[i]);
+	printf("\n");
 	fp=fopen("components.csv","w");
 	igraph_vector_ptr_t compolist;
 	if(igraph_vector_ptr_init(&compolist, 0)==IGRAPH_ENOMEM)
@@ -284,6 +333,7 @@ void translate(sln* net)
 	igraph_write_graph_edgelist((igraph_t*)VECTOR(compolist)[0], fp);
 	fclose(fp);
 
+/*
 	for (i=0; i<igraph_vector_ptr_size(&compolist); i++)
 	{
 		igraph_destroy(VECTOR(compolist)[i]);
