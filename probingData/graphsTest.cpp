@@ -213,9 +213,11 @@ sln* method1ePasse(double** input_data, int size_input, double threshold)
 void translate(sln* net)
 {
 	int i=0,j=0;
+
 	// create general weighted graph, size : n_grnds^2
 	if ( igraph_weighted_adjacency(&net->gr, &net->dists, IGRAPH_ADJ_MAX, NULL, 1) == IGRAPH_NONSQUARE )
 			printf(" Something went wrong for graph init, failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
+
 	// write into file coordinates of uavs
 	FILE* fp;
 	fp=fopen("graphs.csv","w");
@@ -234,24 +236,28 @@ void translate(sln* net)
 		fprintf(fp,"%lf,%lf\n", net->uavs[buff2][0], net->uavs[buff2][1]);
 		fprintf(fp,"\n");
 //printf("%ld,%ld,%lf\n",buff1,buff2,weight);
+//fprintf(bufffp,"%ld-%ld:%lf,%lf:%lf,%lf:W:%lf\n", buff1, buff2, net->uavs[buff1][0], net->uavs[buff1][1], net->uavs[buff2][0], net->uavs[buff2][1],weight);
 	}
 	fclose(fp);
+	igraph_vector_destroy(&ite_edgs);
 
 	// subgraph, true size : (1,...,n_uavs)^2
 	igraph_t true_gr;
 	igraph_vs_t vs;
-	igraph_vs_seq(&vs, 1, net->n_uavs);
+	igraph_vs_seq(&vs, 0, net->n_uavs);
 	// i here is used as just a buffer
 	i=igraph_induced_subgraph(&net->gr, &true_gr, vs, IGRAPH_SUBGRAPH_COPY_AND_DELETE);
 	if(i==IGRAPH_ENOMEM || i==IGRAPH_EINVVID)
 		printf(" %s issue, induced subgraph failed %s, %d, %s \n", ( i==IGRAPH_ENOMEM ? "IGRAPH_ENOMEM": "IGRAPH_EINVVID"), __FILE__, __LINE__, __FUNCTION__);
+
 	// gets labels of connected components of network
 	igraph_vector_t labels, compssizes;
 	igraph_integer_t ncomps=0;
 	if(igraph_vector_init(&labels, 0)==IGRAPH_ENOMEM || igraph_vector_init(&compssizes, 0)==IGRAPH_ENOMEM)
 		printf(" Memory issues, vector init failed %s, %d, %s \n", __FILE__, __LINE__, __FUNCTION__);
 	igraph_clusters(&true_gr, &labels, &compssizes, &ncomps, IGRAPH_WEAK);
-//printf("NUMBER OF COMPONENTS %li\n", (long int)ncomps);
+printf("NUMBER OF COMPONENTS %li\n", (long int)ncomps);
+
 	// write connected components coordinates into files
 	FILE* nfp[nbr_grnds+1];
 	char name[100];
@@ -260,7 +266,6 @@ void translate(sln* net)
 		sprintf(name,"comp-%d.csv",i);
 		nfp[i]=fopen(name,"w");
 	}
-
 	for(i=1;i<=net->n_uavs;i++)
 	{
 		buff1=(long int)VECTOR(labels)[i];
@@ -271,7 +276,6 @@ void translate(sln* net)
 			else fprintf(nfp[buff1],"%lf,", net->uavs[i][j]);
 		}
 	}
-
 	for(i=0;i<ncomps;i++)
 		fclose(nfp[i]);
 
@@ -315,23 +319,10 @@ void translate(sln* net)
 	}
 */
 //	free_complist(&complist); */
-
-//	igraph_destroy(&gr);
+//	igraph_destroy(&true_gr);
 //	igraph_vector_destroy(&edgs);
 
 	/* Housekeeping */
-/*
-	ite = *head;
-	linklist* tmp;
-	while (ite != NULL)
-	{
-		tmp = ite;
-		ite=ite->next;
-		free(tmp);
-	}
-
-	return gr;
-*/
 };
 
 void freeSln(sln* free_sln)
