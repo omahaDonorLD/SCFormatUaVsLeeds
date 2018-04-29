@@ -329,14 +329,16 @@ printf("end labels\n");
 			// find two closest but out of range nodes
 			for (i=1;i<=net->n_uavs;i++)
 			{
-				for (j=i+1;j<=net->n_uavs;j++)
+				for (j=i+1;j<=net->n_uavs && VECTOR(labels)[i] != VECTOR(labels)[j];j++)
 				{
 					/* Find closest clusters but over range */
 					current_distance=net->dists[i][j];
-					if(current_distance<threshold)// skip, in range
-						continue;
+//					if(current_distance<threshold)// skip, in range
+//						continue;
 					// check only if different connected component
-					if(current_distance<min_distance && VECTOR(labels)[i] != VECTOR(labels)[j])
+//					if(current_distance<min_distance && VECTOR(labels)[i] != VECTOR(labels)[j])
+					// Reduncancy!!! If G is well built : all i, j belonging to two different components, then must be out of range
+					if(current_distance<min_distance)
 					{// keep two nodes
 						min_distance=current_distance;
 						n1=i;
@@ -429,12 +431,12 @@ int main(int argc, char** argv)
 	bound_1=1000;
 	bound_2=1000;
 
-	double radius=uavs_range/4;
+	double radius=uavs_range/5;
 
 	sln *res=method1ePasse(grnds, nbr_grnds, radius);
 
 	int i=0,j=0;
-	translate(res, radius);
+	//translate(res, radius);
 
 printf("rl.csv nuavs : %d ",res->n_uavs);
 	FILE* fp;
