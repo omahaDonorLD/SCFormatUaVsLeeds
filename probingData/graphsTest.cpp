@@ -444,7 +444,7 @@ printf("rl.csv nuavs : %d ",res->n_uavs);
 	for(i=1;i<=res->n_uavs;i++)
 		for (j=0;j<dim;j++)
 		{
-			// skip comma missing for last dim
+			// skip comma not needed after last dim value
 			if(j==dim-1)	fprintf(fp,"%lf\n", res->uavs[i][j]);
 			else fprintf(fp,"%lf,", res->uavs[i][j]);
 		}
