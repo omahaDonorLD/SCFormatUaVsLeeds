@@ -272,7 +272,7 @@ void k_means(double** data, int n, sln* clusts, double error_tolerance, double r
     } while (fabs(error - old_error) > error_tolerance);/* if for each iteration, the number of changes made are not different from previous */
 
 
-
+printf(" %d uavs, error : %f\n",clusts->n_uavs,error);
 	updateDistMat(clusts, range);
 
 	/* housekeeping */
@@ -431,14 +431,29 @@ int main(int argc, char** argv)
 	bound_1=1000;
 	bound_2=1000;
 
-	double radius=uavs_range/5;
+	double radius=(uavs_range/2)/4;
 
 	sln *res=method1ePasse(grnds, nbr_grnds, radius);
-
-	int i=0,j=0;
+//	sln *trueres=method1ePasse(grnds, nbr_grnds, radius);
 	//translate(res, radius);
 
-printf("rl.csv nuavs : %d ",res->n_uavs);
+	int i=0,j=0;
+
+
+/*
+	sln** ugly=(sln**)malloc((40)*sizeof(sln*));
+
+	printf("nbr grnds : %d\n",nbr_grnds);
+	for(i=2;i<40;i++)
+	{
+		printf("%d\t:",i);
+		ugly[i]=method1ePasse(grnds, nbr_grnds, radius/i);
+		k_means(grnds, nbr_grnds, ugly[i], 0.0001, radius/i);
+	}
+*/
+
+
+///*
 	FILE* fp;
 	fp=fopen("rl.csv","w");
 	for(i=1;i<=res->n_uavs;i++)
@@ -449,6 +464,20 @@ printf("rl.csv nuavs : %d ",res->n_uavs);
 			else fprintf(fp,"%lf,", res->uavs[i][j]);
 		}
 	fclose(fp);
+//*/
+
+/*
+	fp=fopen("rltrue.csv","w");
+	for(i=1;i<=trueres->n_uavs;i++)
+		for (j=0;j<dim;j++)
+		{
+			// skip comma not needed after last dim value
+			if(j==dim-1)	fprintf(fp,"%lf\n", trueres->uavs[i][j]);
+			else fprintf(fp,"%lf,", trueres->uavs[i][j]);
+		}
+	fclose(fp);
+*/
+	
 
 /*
 	k_means(grnds, nbr_grnds, res, 0.0001, radius);
