@@ -64,10 +64,6 @@ sln* method1ePasse(double** input_data, int size_input, double threshold);
 void k_means(double** data, int n, sln* clusters, double error_tolerance);
 igraph_t* translate(sln* net);
 
-/* for linear problem */
-// Grounds nodes are given as global variables
-void solve_linear_model(sln* net, double range, double lb, double* soln);
-
 //void addToLinkList(linklist** head, int new_index);
 //void removeInLinkList(linklist** head, int del_index);
 
