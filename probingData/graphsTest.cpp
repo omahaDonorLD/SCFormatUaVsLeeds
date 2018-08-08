@@ -216,7 +216,7 @@ double* solve_linear_model(sln* net, double range, double lb)
 		glp_set_col_name(lp, j, col_names[j]);
 		glp_set_col_bnds(lp, j, GLP_DB, 0.0, 1.0);
 		glp_set_obj_coef(lp, j, 1.0);
-		//glp_set_col_kind(lp, j, GLP_BV);
+		glp_set_col_kind(lp, j, GLP_IV);
 		//glp_set_col_kind(lp, j, GLP_BV);
 	}
 
@@ -248,6 +248,7 @@ for(j=1;j<=net->n_uavs;j++)
 */
 	
 	int result_solver=glp_simplex(lp, NULL);
+	int result_solver2=glp_intopt(lp, NULL);
 	z = glp_get_obj_val(lp);
 	
 	/* Gather results */
@@ -259,11 +260,13 @@ for(j=1;j<=net->n_uavs;j++)
 
 	for(j=1;j<=net->n_uavs;j++)
 		if(soln[j]>0)
-			printf(" %d ",j);
+			printf("[ %d : %f ] ",j, soln[j]);
 
 	int activeuavs=0;
+
 	FILE* fp;
 	fp=fopen("uavs.csv","w");
+
 	for(i=1;i<=net->n_uavs;i++)
 	{
 		if(soln[i]>0)
@@ -280,19 +283,31 @@ for(j=1;j<=net->n_uavs;j++)
 	fclose(fp);
 
 	fp=fopen("uavs_grounds.csv","w");
-	int indice=0;
+	int *activecovers=(int*)calloc(nbr_grnds+1,sizeof(int));
+	int indice=0;// For ease in reading
 	for(i=1;i<=nbr_grnds;i++)
 	{
 		for(j=0;j<net->g_covers[i];j++)
 		{
 			indice=net->covers[i][j];// find index of uav
 			if(soln[indice]==0.)	continue;// skip if not active
+			activecovers[i]++;
 			fprintf(fp,"%lf,%lf\n", grnds[i][0], grnds[i][1]);
 			fprintf(fp,"%lf,%lf\n\n", net->uavs[indice][0], net->uavs[indice][1]);
 		}
 	}
 
 	printf(" Obj func : %f and nactive uavs %d\n",z,activeuavs);
+	int max=1;
+	double sum=activecovers[1];
+	for(i=2;i<=nbr_grnds;i++)
+	{
+		printf(" [%d : %d] ",i,activecovers[i]);
+		sum+=activecovers[i];
+		if(activecovers[i] > max)	max=i;
+	}
+	printf("\nAverage : %f\n",sum/nbr_grnds);
+	printf(" Max degree : %d with %d\n",max,activecovers[max]);
 	return soln;
 };
 
