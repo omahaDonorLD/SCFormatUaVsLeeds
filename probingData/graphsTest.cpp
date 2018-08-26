@@ -115,6 +115,19 @@ double euclDistance(double *node1, double *node2)
     return sqrt(norm);
 };
 
+int cmpfuncXaxis(const void *el1, const void *el2)
+{
+	const double *uav1 = (const double*) el1;
+	const double *uav2 = (const double*) el2;
+	return uav1[0]-uav2[0];
+};
+
+int cmpfuncYaxis(const void *el1, const void *el2)
+{
+	const double *uav1 = (const double*) el1;
+	const double *uav2 = (const double*) el2;
+	return uav1[1]-uav2[1];
+};
 
 void updateDistMat(sln* net, double range)
 {// updates the matrix of distances to avoid constantly having to compute them
