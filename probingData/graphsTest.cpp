@@ -37,6 +37,15 @@ typedef struct sln{
 }sln;
 
 
+typedef struct block{
+	float lowleft[2];// the coordinates of the lower left bound
+	float upright[2];// coords of the upper right bound
+	char color;// if leaf : 'b' for black (if block contains only 	), 'w' for white (area is empty), 'g' otherwise (node, not leaf, grey node)
+	int label;// tells which connected component the block belongs to
+	struct block father;
+	struct block quadrants[4];// 4 regions of a quadtree's node : NW, NE, SW, SE
+}block;
+
 int max_uavs_avail;
 int nbr_grnds;
 int dim=2;			// dimension of input vectors
