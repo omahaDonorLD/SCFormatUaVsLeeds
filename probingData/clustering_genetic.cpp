@@ -410,7 +410,7 @@ void connect_CCs(sln* net, igraph_t* Gk, double threshold, int** restr_list, int
 	igraph_vector_t labels, compssizes;// labels of connected components for each vertex
 	double min_distance=DBL_MAX;// distance of two closest nodes but out of range (belong to two different connected components)
 	double current_distance;// used to place a new uav
-	int n1=-1,n2=-1;//two closest but out of range nodes
+	int buffn1=-1,buffn2=-1, n1=-1, n2=-1;//two closest but out of range nodes
 
 	// Use of a brute force branching here. Maybe undeterministic could be better.
 	// brute force : create one unique connected component by iteratively branching the 2 closest connected components
@@ -482,11 +482,13 @@ printf("\n");
 					// check only if different connected component
 					if(current_distance<min_distance)
 					{// keep two nodes
+						buffn1=i;
+						buffn2=j;
+						if( restrict && pairs[level][0] == buffn1 && pairs[level][1] == buffn2 )
+						{
 printf("i j n1 n2 pairs[level][0] pairs[level][1] level : %d %d %d %d %d %d %d\n", i, j, n1, n2, pairs[level][0], pairs[level][1], level);
 printf("level restricted pairs[level][0] == n1, pairs[level][1] == n2 : %d %d %d %d\n", level, restrict, pairs[level][0] == n1, pairs[level][1] == n2);
-						if( restrict && pairs[level][0] == n1 && pairs[level][1] == n2 )
-						{	
-printf("restricted i j n1 n2 net->n_uavs : %d %d %d %d %d\n", i, j, n1, n2, net->n_uavs);
+//printf("in restricted : i j n1 n2 net->n_uavs : %d %d %d %d %d\n", i, j, n1, n2, net->n_uavs);
 							continue;// restrict
 						}
 //printf("not restricted and n1 n2 ncomps : %d %d %d\n", n1, n2, ncomps);
@@ -890,14 +892,80 @@ printf("Test npairs == %d and connected covers : %d\n", *npairs, covers->n_uavs)
 	igraph_t* Gk;
 	igraph_vector_t edges;
 	int nfirst=0;
+	long int ind1,ind2;// needed for the cast
 	sln* buffnets;
 	char path[30];
 	char buff[30];
 	FILE *fout;
 
+	// Do not forget to record first the data from the first graph (graph of reference) 
+		strcpy(path,"./out/G_0");
+		fout=fopen(path,"w");
+		igraph_vector_init(&edges, 0);
+		igraph_get_edgelist(solnG0, &edges, 0);
+		nfirst=igraph_ecount(solnG0);
+		for (i=0, j=0; j<nfirst; i+=2, j++)
+		{
+			ind1=VECTOR(edges)[i];
+			ind2=VECTOR(edges)[i+1];
+			fprintf(fout,"%lf,%lf\n", covers->uavs[ind1][0], covers->uavs[ind1][1]);
+			fprintf(fout,"%lf,%lf\n", covers->uavs[ind2][0], covers->uavs[ind2][1]);
+			fprintf(fout,"\n");
+//	printf("(%ld,%ld)\t", ind1, ind2);
+//fprintf(bufffp,"%ld-%ld:%lf,%lf:%lf,%lf:W:%lf\n", buff1, buff2, net->uavs[buff1][0], net->uavs[buff1][1], net->uavs[buff2][0], net->uavs[buff2][1],weight);
+		}
+//	printf("\n");
+		fclose(fout);
+		igraph_vector_destroy(&edges);
+		
+		strcat(path,"_coords");
+		fout=fopen(path,"w");
+		for(i=1;i<=covers->n_uavs;i++)
+			for (j=0;j<dim;j++)
+			{
+				// skip comma not needed after last dim value
+				if(j==dim-1)	fprintf(fout,"%lf\n", covers->uavs[i][j]);
+				else fprintf(fout,"%lf,", covers->uavs[i][j]);
+			}
+		fclose(fout);
 
-//	for (k=0; k < *npairs; k++)
-	for (k=0; k < 2; k++)
+		if(*npairs%2==0)
+		{// we want n even number of generated files, if there are npairs of newly generated files, if added to the starting graph, we are still
+			// short of one file => easiest solution : copy starting solution in file named [blabla]_[npairs+1]
+			strcpy(path,"./out/G_");
+			sprintf(buff, "%d", *npairs+1);
+			strcat(path,buff);
+			fout=fopen(path,"w");
+			igraph_vector_init(&edges, 0);
+			igraph_get_edgelist(solnG0, &edges, 0);
+			nfirst=igraph_ecount(solnG0);
+			for (i=0, j=0; j<nfirst; i+=2, j++)
+			{
+				ind1=VECTOR(edges)[i];
+				ind2=VECTOR(edges)[i+1];
+				fprintf(fout,"%lf,%lf\n", covers->uavs[ind1][0], covers->uavs[ind1][1]);
+				fprintf(fout,"%lf,%lf\n", covers->uavs[ind2][0], covers->uavs[ind2][1]);
+				fprintf(fout,"\n");
+	//	printf("(%ld,%ld)\t", ind1, ind2);
+	//fprintf(bufffp,"%ld-%ld:%lf,%lf:%lf,%lf:W:%lf\n", buff1, buff2, net->uavs[buff1][0], net->uavs[buff1][1], net->uavs[buff2][0], net->uavs[buff2][1],weight);
+			}
+	//	printf("\n");
+			fclose(fout);
+			igraph_vector_destroy(&edges);
+			
+			strcat(path,"_coords");
+			fout=fopen(path,"w");
+			for(i=1;i<=covers->n_uavs;i++)
+				for (j=0;j<dim;j++)
+				{
+					// skip comma not needed after last dim value
+					if(j==dim-1)	fprintf(fout,"%lf\n", covers->uavs[i][j]);
+					else fprintf(fout,"%lf,", covers->uavs[i][j]);
+				}
+			fclose(fout);
+		}
+
+	for (k=0; k < *npairs; k++)
 	{
 		buffnets=(sln*)malloc(sizeof(sln));
 		// some values are not needed for filling (and allocation) since only the position of uavs (and distance between them) are wanted, as well
@@ -980,7 +1048,6 @@ printf("K ite %li\n", k);
 		igraph_vector_init(&edges, 0);
 		igraph_get_edgelist(Gk, &edges, 0);
 		nfirst=igraph_ecount(Gk);
-		long int ind1,ind2;// needed for the cast
 		for (i=0, j=0; j<nfirst; i+=2, j++)
 		{
 			ind1=VECTOR(edges)[i];
@@ -994,11 +1061,19 @@ printf("K ite %li\n", k);
 //	printf("\n");
 		fclose(fout);
 		igraph_vector_destroy(&edges);
-
-		//fclose(fout);
-
-		igraph_vector_destroy(&edges);
 		free(Gk);
+		
+		strcat(path,"_coords");
+		fout=fopen(path,"w");
+
+		for(i=1;i<=buffnets->n_uavs;i++)
+			for (j=0;j<dim;j++)
+			{
+				// skip comma not needed after last dim value
+				if(j==dim-1)	fprintf(fout,"%lf\n", buffnets->uavs[i][j]);
+				else fprintf(fout,"%lf,", buffnets->uavs[i][j]);
+			}
+		fclose(fout);
 
 		// Housekeeping
 		for(i=0;i<(covers->n_uavs*5);i++)
