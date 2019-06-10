@@ -20,6 +20,10 @@ gcc -L/home/ubuntu/repos_git/opt/glpk-4.64/lib test.o -lglpk -lm
 LD_LIBRARY_PATH=/home/ubuntu/repos_git/opt/glpk-4.64/lib ./a.out
 export LD_LIBRARY_PATH=/home/ubuntu/repos_git/opt/igraph-0.7.1/lib/:${LD_LIBRARY_PATH}
 
+// gnuplot for convex hull plotting
+set datafile separator ","
+plot 'coords.csv' using 1:2 notitle, 'convHullcoords.csv' using 1:2 w line lc rgb 'blue' pt 9 notitle
+
 
 gcc -g -o test igraph_test.c -I ../opt/igraph-0.7.1/include/ -L ../opt/igraph-0.7.1/lib/ -ligraph -lm -g
 set datafile separator ","
