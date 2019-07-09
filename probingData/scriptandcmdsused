@@ -5,6 +5,12 @@ make check
 make install
 
 
+!!! Importants !!!
+plot 'coords.csv' using 1:2 lc rgb 'red' notitle, 'finalres.csv' lc rgb 'green' pt 5 notitle, 'finaluavslinkG0.csv' using 1:2 w lines notitle
+plot 'coords.csv' using 1:2 notitle, 'out/G_0_coords' using 1:2 lc rgb 'green' pt 5 notitle, 'out/G_0' lc rgb 'blue' w lines notitle
+plot 'coords.csv' using 1:2 lc rgb 'red' notitle, 'out/G_0_coords' lc rgb 'green' pt 5 notitle, 'out/G_0' lc rgb 'green' w lines notitle, 'onlyg3_coords' lc rgb 'yellow' pt 5 notitle, 'onlyg3' lc rgb 'yellow' w lines notitle
+	, 'onlyg4' lc rgb 'blue' w lines notitle, 'onlyg4_coords' lc rgb 'blue' pt 5 notitle, 'onlyg5' lc rgb '#800000' lt 2 w lines notitle, 'onlyg5_coords' lc rgb '#800000' pt 5 notitle
+
 // bash script for counting the number of lines
 for afile in $(ls -l *_coords | cut -d " " -f9); do wc -l $afile; done
 // running python with set of arguments
@@ -31,6 +37,7 @@ plot 'coords.csv' using 1:2 title "grounds", 'rl.csv' using 1:2 lc rgb 'blue' pt
 plot 'coords.csv' using 1:2, 'rl.csv' using 1:2 lc rgb 'blue' pt 9, 'rl2.csv' using 1:2 lc rgb 'green' pt 5, 'rlkmeans.csv' using 1:2 lc rgb 'black' pt 3
 plot 'coords.csv' using 1:2 notitle, 'rl.csv' using 1:2 lc rgb 'blue' pt 9 notitle, 'graphs.csv' using 1:2 w lines notitle
 plot 'coords.csv' using 1:2 notitle, 'lin_sol.csv' lc rgb 'green' w circles notitle, 'lin_sol.csv' u 1:2 pt 2 lc rgb 'blue' notitle
+plot 'coords.csv' using 1:2 lc rgb 'red' notitle, 'lin_sol1cover.csv' lc rgb 'green' pt 5 notitle, 'uavslink.csv' using 1:2 w lines notitle
 
 plot 'coords.csv' u 1:2 notitle, 'genet_clust.csv' u 1:2 lc rgb 'blue' w lines notitle, 'resclassiconepass.csv' u 1:2 lc rgb 'green' pt 5 notitle
 

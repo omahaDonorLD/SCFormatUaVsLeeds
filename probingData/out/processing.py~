@@ -1,5 +1,0 @@
-with open("G_1") as fp:
-	line = fp.readline()
-	while line :
-		print("Line ",line)
-
