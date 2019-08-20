@@ -1318,6 +1318,7 @@ clock_t begin = clock();
 printf("nbr grnds : %d\n",nbr_grnds);
 
 	do{
+		
 		/* do until elbow satisfied. Criteria :   */
 		res_plus_2=method1ePasse(grnds, nbr_grnds, radius/i);
 		wss=k_means(grnds, nbr_grnds, res_plus_2, 0.0001, radius/i);
@@ -1360,7 +1361,7 @@ printf("Stopping condition holds : wss_minus_1-wss > elbow_ratio*prev_deviation 
 			res_plus_1=res_plus_2;// store result
 			freeSln(del);//Housekeeping
 		}
-	}while(!stop);
+	}while(!stop && wss>0);
 //	}while(i<10);
 
 
@@ -1381,7 +1382,7 @@ printf("Stopping condition holds : wss_minus_1-wss > elbow_ratio*prev_deviation 
 	fclose(fp);
 */
 
-	double* soln=solve_linear_model(res, radius, 2.0);
+	double* soln=solve_linear_model(res, radius, 1.0);
 
 /*
 clock_t end = clock();
@@ -1422,10 +1423,11 @@ printf("nActivUAVs %d\n", nActivUAVs);
 
 	sln* finalres=(sln*)malloc(sizeof(sln));
 	finalres->n_uavs=nActivUAVs;
-	finalres->uavs=(double**)malloc((nbr_grnds+1)*sizeof(double*));
-	finalres->dists=(double**)malloc((nbr_grnds+1)*sizeof(double*));
+	finalres->uavs=(double**)malloc((nbr_grnds*2+1)*sizeof(double*));
+	finalres->dists=(double**)malloc((nbr_grnds*2+1)*sizeof(double*));
+	finalres->counters=(int*)calloc((nbr_grnds*2+1),sizeof(int));
 	int buffint=0;
-	for(i=1;i<=nbr_grnds;i++)
+	for(i=1;i<=nbr_grnds*2;i++)
 	{
 		finalres->uavs[i]=(double*)calloc(dim,sizeof(double));// All uavs to origin
 		finalres->dists[i]=(double*)calloc((res->n_uavs+1),sizeof(double));
