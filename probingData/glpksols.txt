@@ -1,0 +1,264 @@
+Problem:    set cover
+Rows:       125
+Columns:    107
+Non-zeros:  977
+Status:     UNDEFINED
+Objective:  0 (MINimum)
+
+   No.   Row name   St   Activity     Lower bound   Upper bound    Marginal
+------ ------------ -- ------------- ------------- ------------- -------------
+     1 r1           B              0             2               
+     2 r2           B              0             2               
+     3 r3           B              0             2               
+     4 r4           B              0             2               
+     5 r5           B              0             2               
+     6 r6           B              0             2               
+     7 r7           B              0             2               
+     8 r8           B              0             2               
+     9 r9           B              0             2               
+    10 r10          B              0             2               
+    11 r11          B              0             2               
+    12 r12          B              0             2               
+    13 r13          B              0             2               
+    14 r14          B              0             2               
+    15 r15          B              0             2               
+    16 r16          B              0             2               
+    17 r17          B              0             2               
+    18 r18          B              0             2               
+    19 r19          B              0             2               
+    20 r20          B              0             2               
+    21 r21          B              0             2               
+    22 r22          B              0             2               
+    23 r23          B              0             2               
+    24 r24          B              0             2               
+    25 r25          B              0             2               
+    26 r26          B              0             2               
+    27 r27          B              0             2               
+    28 r28          B              0             2               
+    29 r29          B              0             2               
+    30 r30          B              0             2               
+    31 r31          B              0             2               
+    32 r32          B              0             2               
+    33 r33          B              0             2               
+    34 r34          B              0             2               
+    35 r35          B              0             2               
+    36 r36          B              0             2               
+    37 r37          B              0             2               
+    38 r38          B              0             2               
+    39 r39          B              0             2               
+    40 r40          B              0             2               
+    41 r41          B              0             2               
+    42 r42          B              0             2               
+    43 r43          B              0             2               
+    44 r44          B              0             2               
+    45 r45          B              0             2               
+    46 r46          B              0             2               
+    47 r47          B              0             2               
+    48 r48          B              0             2               
+    49 r49          B              0             2               
+    50 r50          B              0             2               
+    51 r51          B              0             2               
+    52 r52          B              0             2               
+    53 r53          B              0             2               
+    54 r54          B              0             2               
+    55 r55          B              0             2               
+    56 r56          B              0             2               
+    57 r57          B              0             2               
+    58 r58          B              0             2               
+    59 r59          B              0             2               
+    60 r60          B              0             2               
+    61 r61          B              0             2               
+    62 r62          B              0             2               
+    63 r63          B              0             2               
+    64 r64          B              0             2               
+    65 r65          B              0             2               
+    66 r66          B              0             2               
+    67 r67          B              0             2               
+    68 r68          B              0             2               
+    69 r69          B              0             2               
+    70 r70          B              0             2               
+    71 r71          B              0             2               
+    72 r72          B              0             2               
+    73 r73          B              0             2               
+    74 r74          B              0             2               
+    75 r75          B              0             2               
+    76 r76          B              0             2               
+    77 r77          B              0             2               
+    78 r78          B              0             2               
+    79 r79          B              0             2               
+    80 r80          B              0             2               
+    81 r81          B              0             2               
+    82 r82          B              0             2               
+    83 r83          B              0             2               
+    84 r84          B              0             2               
+    85 r85          B              0             2               
+    86 r86          B              0             2               
+    87 r87          B              0             2               
+    88 r88          B              0             2               
+    89 r89          B              0             2               
+    90 r90          B              0             2               
+    91 r91          B              0             2               
+    92 r92          B              0             2               
+    93 r93          B              0             2               
+    94 r94          B              0             2               
+    95 r95          B              0             2               
+    96 r96          B              0             2               
+    97 r97          B              0             2               
+    98 r98          B              0             2               
+    99 r99          B              0             2               
+   100 r100         B              0             2               
+   101 r101         B              0             2               
+   102 r102         B              0             2               
+   103 r103         B              0             2               
+   104 r104         B              0             2               
+   105 r105         B              0             2               
+   106 r106         B              0             2               
+   107 r107         B              0             2               
+   108 r108         B              0             2               
+   109 r109         B              0             2               
+   110 r110         B              0             2               
+   111 r111         B              0             2               
+   112 r112         B              0             2               
+   113 r113         B              0             2               
+   114 r114         B              0             2               
+   115 r115         B              0             2               
+   116 r116         B              0             2               
+   117 r117         B              0             2               
+   118 r118         B              0             2               
+   119 r119         B              0             2               
+   120 r120         B              0             2               
+   121 r121         B              0             2               
+   122 r122         B              0             2               
+   123 r123         B              0             2               
+   124 r124         B              0             2               
+   125 r125         B              0             2               
+
+   No. Column name  St   Activity     Lower bound   Upper bound    Marginal
+------ ------------ -- ------------- ------------- ------------- -------------
+     1 x1           NL             0             0             1         < eps
+     2 x2           NL             0             0             1         < eps
+     3 x3           NL             0             0             1         < eps
+     4 x4           NL             0             0             1         < eps
+     5 x5           NL             0             0             1         < eps
+     6 x6           NL             0             0             1         < eps
+     7 x7           NL             0             0             1         < eps
+     8 x8           NL             0             0             1         < eps
+     9 x9           NL             0             0             1         < eps
+    10 x10          NL             0             0             1         < eps
+    11 x11          NL             0             0             1         < eps
+    12 x12          NL             0             0             1         < eps
+    13 x13          NL             0             0             1         < eps
+    14 x14          NL             0             0             1         < eps
+    15 x15          NL             0             0             1         < eps
+    16 x16          NL             0             0             1         < eps
+    17 x17          NL             0             0             1         < eps
+    18 x18          NL             0             0             1         < eps
+    19 x19          NL             0             0             1         < eps
+    20 x20          NL             0             0             1         < eps
+    21 x21          NL             0             0             1         < eps
+    22 x22          NL             0             0             1         < eps
+    23 x23          NL             0             0             1         < eps
+    24 x24          NL             0             0             1         < eps
+    25 x25          NL             0             0             1         < eps
+    26 x26          NL             0             0             1         < eps
+    27 x27          NL             0             0             1         < eps
+    28 x28          NL             0             0             1         < eps
+    29 x29          NL             0             0             1         < eps
+    30 x30          NL             0             0             1         < eps
+    31 x31          NL             0             0             1         < eps
+    32 x32          NL             0             0             1         < eps
+    33 x33          NL             0             0             1         < eps
+    34 x34          NL             0             0             1         < eps
+    35 x35          NL             0             0             1         < eps
+    36 x36          NL             0             0             1         < eps
+    37 x37          NL             0             0             1         < eps
+    38 x38          NL             0             0             1         < eps
+    39 x39          NL             0             0             1         < eps
+    40 x40          NL             0             0             1         < eps
+    41 x41          NL             0             0             1         < eps
+    42 x42          NL             0             0             1         < eps
+    43 x43          NL             0             0             1         < eps
+    44 x44          NL             0             0             1         < eps
+    45 x45          NL             0             0             1         < eps
+    46 x46          NL             0             0             1         < eps
+    47 x47          NL             0             0             1         < eps
+    48 x48          NL             0             0             1         < eps
+    49 x49          NL             0             0             1         < eps
+    50 x50          NL             0             0             1         < eps
+    51 x51          NL             0             0             1         < eps
+    52 x52          NL             0             0             1         < eps
+    53 x53          NL             0             0             1         < eps
+    54 x54          NL             0             0             1         < eps
+    55 x55          NL             0             0             1         < eps
+    56 x56          NL             0             0             1         < eps
+    57 x57          NL             0             0             1         < eps
+    58 x58          NL             0             0             1         < eps
+    59 x59          NL             0             0             1         < eps
+    60 x60          NL             0             0             1         < eps
+    61 x61          NL             0             0             1         < eps
+    62 x62          NL             0             0             1         < eps
+    63 x63          NL             0             0             1         < eps
+    64 x64          NL             0             0             1         < eps
+    65 x65          NL             0             0             1         < eps
+    66 x66          NL             0             0             1         < eps
+    67 x67          NL             0             0             1         < eps
+    68 x68          NL             0             0             1         < eps
+    69 x69          NL             0             0             1         < eps
+    70 x70          NL             0             0             1         < eps
+    71 x71          NL             0             0             1         < eps
+    72 x72          NL             0             0             1         < eps
+    73 x73          NL             0             0             1         < eps
+    74 x74          NL             0             0             1         < eps
+    75 x75          NL             0             0             1         < eps
+    76 x76          NL             0             0             1         < eps
+    77 x77          NL             0             0             1         < eps
+    78 x78          NL             0             0             1         < eps
+    79 x79          NL             0             0             1         < eps
+    80 x80          NL             0             0             1         < eps
+    81 x81          NL             0             0             1         < eps
+    82 x82          NL             0             0             1         < eps
+    83 x83          NL             0             0             1         < eps
+    84 x84          NL             0             0             1         < eps
+    85 x85          NL             0             0             1         < eps
+    86 x86          NL             0             0             1         < eps
+    87 x87          NL             0             0             1         < eps
+    88 x88          NL             0             0             1         < eps
+    89 x89          NL             0             0             1         < eps
+    90 x90          NL             0             0             1         < eps
+    91 x91          NL             0             0             1         < eps
+    92 x92          NL             0             0             1         < eps
+    93 x93          NL             0             0             1         < eps
+    94 x94          NL             0             0             1         < eps
+    95 x95          NL             0             0             1         < eps
+    96 x96          NL             0             0             1         < eps
+    97 x97          NL             0             0             1         < eps
+    98 x98          NL             0             0             1         < eps
+    99 x99          NL             0             0             1         < eps
+   100 x100         NL             0             0             1         < eps
+   101 x101         NL             0             0             1         < eps
+   102 x102         NL             0             0             1         < eps
+   103 x103         NL             0             0             1         < eps
+   104 x104         NL             0             0             1         < eps
+   105 x105         NL             0             0             1         < eps
+   106 x106         NL             0             0             1         < eps
+   107 x107         NL             0             0             1         < eps
+
+Karush-Kuhn-Tucker optimality conditions:
+
+KKT.PE: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+KKT.PB: max.abs.err = 2.00e+00 on row 1
+        max.rel.err = 6.67e-01 on row 1
+        PRIMAL SOLUTION IS INFEASIBLE
+
+KKT.DE: max.abs.err = 1.00e+00 on column 1
+        max.rel.err = 5.00e-01 on column 1
+        DUAL SOLUTION IS WRONG
+
+KKT.DB: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+End of output

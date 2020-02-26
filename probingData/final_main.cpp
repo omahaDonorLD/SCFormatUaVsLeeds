@@ -1,12 +1,12 @@
 
 
 //#include "linear_solver.hpp"
-#include <stdlib.h>
+//#include <stdlib>
 #include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstring>
+#include <ctime>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 #include <igraph.h>
 #include <assert.h>
@@ -14,6 +14,7 @@
 
 #include <glpk.h>
 
+using namespace std;
 
 inline
 int STREAM_FAIL(const char *FROM_FILE, int AT_LINE, const char *IN_FUNCTION)
@@ -76,9 +77,6 @@ void freeSln(sln* free_sln);
 void readData(char** argv)
 {
 	FILE* fp;
-	char *tmp[100];// buffer
-	int tmp2;// this too
-
 
 	// read data (coordinates ground nodes)
 	fp=fopen(argv[1],"r");
@@ -167,6 +165,7 @@ void duplicate(double lb, sln* net)
 	{
 		if ( net->g_covers[i] < lb)
 		{
+printf("Duplicate uavs for gnode %d, which is covered with %d uavs \n", i, net->g_covers[i]);
 			ub=net->g_covers[i];
 			do
 			{
@@ -180,8 +179,15 @@ void duplicate(double lb, sln* net)
 					net->uavs[net->n_uavs][j]=net->uavs[ind][j];
 			/* Keep copying until constraint on lb is satisfied */
 			}while(net->g_covers[i] < lb);
+/*
+printf("Duplicated : ");
+for(int a=0; a<net->g_covers[i]; a++)
+printf(" %d ", net->covers[i][a]);
+printf("\n");
+*/
 		}
 	}
+printf("\n");
 };
 
 
@@ -198,6 +204,7 @@ void find_covers(sln* net, double range)
 		{
 			if( euclDistance(net->uavs[j],grnds[i]) <= range && net->covers[i][0] != j)
 			{
+
 				net->covers[i][net->g_covers[i]]=j;
 				net->g_covers[i]++;
 			}
@@ -226,7 +233,7 @@ double* solve_linear_model(sln* net, double range, double lb)
 		}
 	}
 
-
+printf("Begin building linear problem with %d ground nodes, and %d uavs\n", nbr_grnds, net->n_uavs);
 	/* Build linear problem */
 	glp_prob *lp;
 	int ia[nbr_grnds*net->n_uavs+1],ja[nbr_grnds*net->n_uavs+1];
@@ -278,17 +285,26 @@ printf("RANGE %f, lb %f\n",range,lb);
 
 	glp_load_matrix(lp, nbr_grnds*net->n_uavs, ia, ja, ar);
 	
+
 /*
 	int ind[net->n_uavs+1];
 	double val[net->n_uavs+1];
-for(j=1;j<=net->n_uavs;j++)
-{
-	ind[j]=0;
-	val[j]=0;
-}
-	int len=glp_get_mat_row(lp, 113, ind, val);
-//printf(" LO %f, COL LO %f, COL UP %f\n",glp_get_row_lb(lp,113),glp_get_col_lb(lp,88),glp_get_col_ub(lp,88));
+	for(i=1;i<=nbr_grnds;i++)
+	{
+		for(j=1;j<net->n_uavs;j++)
+		{
+			ind[j]=0;
+			val[j]=0;
+		}
+		int len=glp_get_mat_row(lp, i, ind, val);// stores non zero values of row 113 into "ind(indices of cols), val(non zero values)"
+//		printf(" LO %f, COL LO %f, COL UP %f %d\n",glp_get_row_lb(lp,113),glp_get_col_lb(lp,88),glp_get_col_ub(lp,88), len);
+		printf("gnode %d has %d, covers => ", i, len);
+		for(j=1;j<=len;j++)
+		printf(" %d, ", ind[j]);
+		printf("\n");		
+	}
 */
+
 	
 //	int result_solver=glp_simplex(lp, NULL);
 
@@ -324,16 +340,17 @@ for(j=1;j<=net->n_uavs;j++)
 //		if (soln[j] - ceil(soln[j]) != 0)	printf(" soln %d not an integer = %f\n", j, soln[j]);
 	}
 	
+	glp_print_sol(lp, "glpksols.txt");
+	
 	glp_delete_prob(lp);
 
-/*
 	for(j=1;j<=net->n_uavs;j++)
 		if(soln[j]>0)
 			printf("[ %d : %f ] ",j, soln[j]);
-*/
+
 	
 	printf("\nRO == %f, max = %f, min = %f, aver = %f, lessThanAvrg = %f, moreThanvrg = %f\n",sumrows, maxrow, minrow, sumrows/nbr_grnds, lessThanAvrg, moreThanvrg);
-	for(i=0;i<=(int)maxrow;i++)	printf("cov[%d]=%f\t",i,covRes[i]);
+	for(i=0;i<=(int)maxrow;i++)	if(covRes[i]>0) printf("cov[%d]=%f\t",i,covRes[i]);
 	printf("\n");
 	int activeuavs=0;
 
@@ -373,11 +390,12 @@ for(j=1;j<=net->n_uavs;j++)
 	printf(" Obj func : %f and nactive uavs %d\n",z,activeuavs);
 	int max=1;
 	double sum=activecovers[1];
-	for(i=2;i<=nbr_grnds;i++)
+	printf("Couples (ground, n active uavs covering it) : ");
+	for(i=1;i<=nbr_grnds;i++)
 	{
-		printf(" [%d : %d] ",i,activecovers[i]);
+		printf(" (%d, %d) ",i,activecovers[i]);
 		sum+=activecovers[i];
-		if(activecovers[i] > max)	max=i;
+		if(activecovers[i] > activecovers[max])	max=i;
 	}
 	printf("\nAverage : %f\n",sum/nbr_grnds);
 	printf(" Max degree : %d with %d\n",max,activecovers[max]);
@@ -783,10 +801,10 @@ igraph_t* translate(sln* net, double threshold, double* solverSln)
 	long int i=0,j=0;
 	igraph_integer_t ncomps=-1;// numbers of connected components
 	igraph_vector_t labels, compssizes;// labels of connected components for each vertex
-	double min_distance=DBL_MAX;// distance of two closest nodes but out of range (belong to two different connected components)
-	double current_distance;// used to place a new uav
+//	double min_distance=DBL_MAX;// distance of two closest nodes but out of range (belong to two different connected components)
+//	double current_distance;// used to place a new uav
 //	double shared=threshold/4; "shared" is the degree of "merging" of two uavs where the area is shared
-	int n1=-1,n2=-1;//two closest but out of range nodes
+//	int n1=-1,n2=-1;//two closest but out of range nodes
 
 	// here, the vectors "labels" are only used to create graph
 	int nActivUAVs=0;// used to keep record of the number of uavs
@@ -874,6 +892,7 @@ printf("Graph 0 has %d connected components\n",ncomps);
 			{
 				for (j=i+1;j<=net->n_uavs && VECTOR(labels)[i] != VECTOR(labels)[j];j++)
 				{
+*/
 					/* Find closest clusters but over range */
 /*					current_distance=net->dists[i][j];
 //					if(current_distance<threshold)// skip, in range
@@ -1042,6 +1061,13 @@ printf("Test npairs == %d and connected covers : %d\n", *npairs, covers->n_uavs)
 				else fprintf(fout,"%lf,", covers->uavs[i][j]);
 			}
 		fclose(fout);
+		
+		find_covers(covers, threshold);
+		
+int overallredundancy=0;
+// Compute redundancy of G_0
+for(i=1;i<=nbr_grnds;i++)	overallredundancy+=covers->g_covers[i];
+printf("G_0 has overall redundancy of %d\n",overallredundancy);
 
 		if(*npairs%2==0)
 		{// we want n even number of generated files, if there are npairs of newly generated files, if added to the starting graph, we are still
@@ -1289,8 +1315,8 @@ clock_t begin = clock();
 
 	readData(argv);
 
-	bound_1=1000;
-	bound_2=1000;
+	//bound_1=1000;
+	//bound_2=1000;
 
 //	double radius=(uavs_range/2);
 	double radius=uavs_range;
@@ -1382,7 +1408,9 @@ printf("Stopping condition holds : wss_minus_1-wss > elbow_ratio*prev_deviation 
 	fclose(fp);
 */
 
-	double* soln=solve_linear_model(res, radius, 1.0);
+	double lb=2.0;
+
+	double* soln=solve_linear_model(res, radius, lb);
 
 /*
 clock_t end = clock();
@@ -1426,11 +1454,14 @@ printf("nActivUAVs %d\n", nActivUAVs);
 	finalres->uavs=(double**)malloc((nbr_grnds*2+1)*sizeof(double*));
 	finalres->dists=(double**)malloc((nbr_grnds*2+1)*sizeof(double*));
 	finalres->counters=(int*)calloc((nbr_grnds*2+1),sizeof(int));
+	finalres->covers=(int**)malloc((nbr_grnds*2+1)*sizeof(int*));
+	finalres->g_covers=(int*)calloc((nbr_grnds+1),sizeof(int));
 	int buffint=0;
 	for(i=1;i<=nbr_grnds*2;i++)
 	{
 		finalres->uavs[i]=(double*)calloc(dim,sizeof(double));// All uavs to origin
-		finalres->dists[i]=(double*)calloc((res->n_uavs+1),sizeof(double));
+		finalres->dists[i]=(double*)calloc((nbr_grnds*2+1),sizeof(double));
+		finalres->covers[i]=(int*)malloc((nbr_grnds*2+1)*sizeof(int));
 		buffint=indexActivUavs[i];
 //printf("buffint %d, i = %d\n",buffint,i);
 		for(j=0;j<dim;j++)
@@ -1466,8 +1497,8 @@ printf("nActivUAVs %d\n", nActivUAVs);
 	// in order to build  the first connected graph. "restr_list" is a matrix where : for i in {1 to the number of ground nodes} :
 	// matrix[i][0] == -1, or matrix[i][0] > 0
 	// 1. if matrix[i][0] > 0, then matrix[i][0] contains the index of a given uav connected to another existing uav => exists in graph an edge
-	// containing value in matrix[i][0] : if an edge (u',matrix[i][0]) (or (u',u) where u==matrix[i][0]), then the remaining
-	// cells : matrix[i][1] to matrix[i][m] contain the other m uavs (their indices) with wich u is connected to :
+	// containing value in matrix[i][0] : if exists an edge (u',matrix[i][0]) (or (u',u) where u==matrix[i][0]), then the remaining
+	// cells : from matrix[i][1] to matrix[i][m] contain the other m uavs (their indices) to wich u is connected :
 	// matrix[i][1,...,m]={u1',u2',...,um'} such that exists (u,u1'),(u,u2'),...,(u,um').
 	// to know the value of m for matrix[i], the list matrix[i] is bounded by -1 on the cell following the cell matrix[i][m]
 	// <=> the list matrix[i] is such that matrix[i][m+1] == -1
@@ -1493,8 +1524,8 @@ printf("nActivUAVs %d\n", nActivUAVs);
 	// usually, at most nbr_grnds-1 edges are needed to build a single connected component
 	// but since new positions are constantly created, thus it's not completely possible to assert that only nbr_grnds-1 are needed
 	// for the connectivity, thus plan more space
-	int** pairs=(int**)malloc((finalres->n_uavs*5)*sizeof(int*));
-	for (i=0;i<(finalres->n_uavs*5);i++)
+	int** pairs=(int**)malloc((finalres->n_uavs*3)*sizeof(int*));
+	for (i=0;i<(finalres->n_uavs*3);i++)
 	{
 		pairs[i]=(int*)malloc(2*sizeof(int));
 		for (j=0;j<2;j++)	pairs[i][j]=-1;
@@ -1502,7 +1533,7 @@ printf("nActivUAVs %d\n", nActivUAVs);
 
 printf("i=%d and nuavs %d\n",i,finalres->n_uavs);
 
-	igraph_t* solG0;
+	igraph_t* solG0=nullptr;
 	//igraph_t** solnsGraphs;
 	//igraph_t* solnsGraphs;
 	//igraph_t** solnsGraphs=(igraph_t**)malloc(NINDIVS*sizeof(igraph_t*));
@@ -1517,7 +1548,7 @@ printf("i=%d and nuavs %d\n",i,finalres->n_uavs);
 	i=0;
 	while(pairs[i][0] > 0 || pairs[i][1] > 0)
 	{
-		if(pairs[i][0] > 0 && pairs[i][1] < 0 || pairs[i][0] > 0 && pairs[i][1] < 0)
+		if( (pairs[i][0] > 0 && pairs[i][1] < 0) || (pairs[i][0] > 0 && pairs[i][1] < 0) )
 			printf("problem here : not synchronised (%d,%d)\n", pairs[i][0], pairs[i][1]);
 //		printf("pair %d : (%f,%f)\n", i, pairs[i][0], pairs[i][1]);
 		i++;
@@ -1546,7 +1577,6 @@ printf("i=%d and nuavs %d\n",i,finalres->n_uavs);
 //printf("\n");
 
 /*
-///*
 	FILE* fp;
 	fp=fopen("rl.csv","w");
 	for(i=1;i<=res->n_uavs;i++)
