@@ -1523,7 +1523,7 @@ printf("nActivUAVs %d\n", nActivUAVs);
 	// keeps track of pairs of used points to create new uavs in order to link separated connected components.
 	// usually, at most nbr_grnds-1 edges are needed to build a single connected component
 	// but since new positions are constantly created, thus it's not completely possible to assert that only nbr_grnds-1 are needed
-	// for the connectivity, thus plan more space
+	// for the connectivity, thus allocate more space
 	int** pairs=(int**)malloc((finalres->n_uavs*3)*sizeof(int*));
 	for (i=0;i<(finalres->n_uavs*3);i++)
 	{

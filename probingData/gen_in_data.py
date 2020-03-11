@@ -2,7 +2,7 @@ alldata=[]
 import random
 from random import randint
 
-nuavs=150
+nuavs=500
 uavsrange=125
 
 alldata=[]
