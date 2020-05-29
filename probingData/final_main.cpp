@@ -696,7 +696,11 @@ printf("level restricted pairs[level][0] == n1, pairs[level][1] == n2 : %d %d %d
 				*npairs=*npairs+1;
 // printf("In ! restrict : %d connected components\n", *npairs);
 			}
-
+/*
+long int zz=igraph_vcount(Gk);
+for(long int z=0;z<zz;z++)	printf("%li ",VECTOR(labels)[z]);
+printf("\n");
+*/
 			// free vector of labels
 			igraph_vector_destroy(&labels);
 
