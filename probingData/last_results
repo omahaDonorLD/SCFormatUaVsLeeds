@@ -1,0 +1,78 @@
+1one pass results with threshold 125.000000 and 26 uavs
+phase 1 : clustering, final 26
+with threshold 125.000000 and 26 uavs
+(2,3)	(3,5)	(18,21)	(23,26)	
+(2,3)	(3,5)	(18,21)	(23,26)	
+Graph 1 has 23 connected components
+Graph 2 has 22 connected components
+Graph 3 has 21 connected components
+Graph 4 has 20 connected components
+Graph 5 has 19 connected components
+Graph 6 has 18 connected components
+Graph 7 has 17 connected components
+Graph 8 has 16 connected components
+Graph 9 has 15 connected components
+Graph 10 has 14 connected components
+Graph 11 has 13 connected components
+Graph 12 has 12 connected components
+Graph 13 has 11 connected components
+Graph 14 has 10 connected components
+Graph 15 has 9 connected components
+Graph 16 has 8 connected components
+Graph 17 has 7 connected components
+Graph 18 has 6 connected components
+Graph 19 has 5 connected components
+Graph 20 has 4 connected components
+Graph 21 has 3 connected components
+Graph 22 has 4 connected components
+Graph 23 has 3 connected components
+Graph 24 has 2 connected components
+Start here restricted list
+28	20	26	
+29	13	25	
+30	23	25	29	
+31	7	19	27	
+32	17	21	
+33	6	9	
+34	21	22	
+35	9	14	
+36	6	8	33	
+37	8	19	31	
+38	11	21	32	34	
+39	1	2	3	
+40	2	15	
+41	12	17	
+42	3	4	
+43	20	24	26	28	
+44	16	39	
+45	10	11	
+46	16	45	
+47	
+48	24	47	
+49	4	47	
+
+phase 2 : first connected graph, final 49
+pair 0 : (12.000000,19.000000)
+pair 1 : (20.000000,26.000000)
+pair 2 : (13.000000,25.000000)
+pair 3 : (23.000000,25.000000)
+pair 4 : (7.000000,19.000000)
+pair 5 : (17.000000,21.000000)
+pair 6 : (6.000000,9.000000)
+pair 7 : (21.000000,22.000000)
+pair 8 : (9.000000,14.000000)
+pair 9 : (6.000000,8.000000)
+pair 10 : (8.000000,19.000000)
+pair 11 : (11.000000,21.000000)
+pair 12 : (1.000000,2.000000)
+pair 13 : (2.000000,15.000000)
+pair 14 : (12.000000,17.000000)
+pair 15 : (3.000000,4.000000)
+pair 16 : (24.000000,28.000000)
+pair 17 : (16.000000,39.000000)
+pair 18 : (10.000000,11.000000)
+pair 19 : (16.000000,45.000000)
+pair 20 : (4.000000,24.000000)
+pair 21 : (24.000000,47.000000)
+pair 22 : (4.000000,47.000000)
+|Time spent 0.014495

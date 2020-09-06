@@ -1,6 +1,0 @@
-Remainder :
-	glpk (~/opt) which uses gmp (default: /usr/lib/)
-	
-So far :
-	used c file for experiments : graphsTest.cpp
-	includes solver module : linear_solver.cpp
