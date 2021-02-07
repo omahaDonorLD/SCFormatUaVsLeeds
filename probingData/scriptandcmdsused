@@ -58,12 +58,15 @@ plot '../coords.csv' u 1:2 notitle, 'G_5' u 1:2 lc rgb 'blue' w linespoints noti
 plot '../coords.csv' using 1:2 notitle, 'G_1_coords' using 1:2 lc rgb 'blue' pt 9 notitle, 'G_12_coords' using 1:2 lc rgb 'green' pt 5 notitle, 'G_17_coords' using 1:2 lc rgb 'black' pt 3 notitle, 'G_23_coords' using 1:2 lc rgb 'black' pt 1 notitle
 
 // Elbow
-
 set datafile separator ","
+set decimalsign ','
+set format "%'.0f"
+set yrange [-10000:70000]
+set decimal locale
 set ylabel "wss"
 set xlabel "range/i"
-set yrange [-10000:70000]
+% set xtics ("-")
 set arrow from 4,-10000 to 4,7364.107552 lt 0 nohead
 set arrow from 2,7364.107552 to 4,7364.107552 lt 0 nohead
-plot 'forElbow.csv' using 1:2 with linespoints linestyle 2 lc rgb 'blue' notitle, 'forElbow2.csv' using 1:2 with linespoints linestyle 3 lc rgb 'red' notitle, 'forElbow3.csv' using 1:2:(sprintf("(%.1f,%.1f)", $1, $2)) with labels left offset 1,1 notitle
+plot 'forElbow.csv' using 1:2 with linespoints linestyle 2 lc rgb 'blue' notitle, 'forElbow2.csv' using 1:2 with linespoints linestyle 3 lc rgb 'red' notitle, 'forElbow3.csv' using 1:2:(sprintf("(%.1f ; %.1f)", $1, $2)) with labels left offset 1,1 notitle
 
